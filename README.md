@@ -1,4 +1,4 @@
-# 🎉 Shirtieza E-Commerce Platform - COMPLETE anjing
+# 🎉 Shirtieza E-Commerce Platform - COMPLETE 
 
 Aplikasi e-commerce modern yang fully functional dengan frontend React yang indah dan backend Go yang powerful.
 
