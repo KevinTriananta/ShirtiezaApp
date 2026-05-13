@@ -1,0 +1,11 @@
+.env
+*.db
+.DS_Store
+.vscode
+.idea
+*.swp
+*.swo
+*.exe
+dist/
+build/
+uploads/

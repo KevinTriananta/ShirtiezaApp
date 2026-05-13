@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  # Backend API
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: shirtieza-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_DRIVER=sqlite
+      - SERVER_PORT=8080
+      - SERVER_ENV=development
+    volumes:
+      - ./:/app
+      - shirtieza-db:/root/
+    networks:
+      - shirtieza-network
+    restart: unless-stopped
+    command: ./shirtieza-api
+
+  # PostgreSQL (Optional - for production)
+  # postgres:
+  #   image: postgres:15-alpine
+  #   container_name: shirtieza-postgres
+  #   environment:
+  #     POSTGRES_DB: shirtieza_db
+  #     POSTGRES_USER: shirtieza
+  #     POSTGRES_PASSWORD: shirtieza_password
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   networks:
+  #     - shirtieza-network
+  #   restart: unless-stopped
+
+volumes:
+  shirtieza-db:
+  # postgres_data:
+
+networks:
+  shirtieza-network:
+    driver: bridge
