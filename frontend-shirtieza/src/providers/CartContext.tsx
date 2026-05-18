@@ -49,6 +49,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
     try {
       const response = await cartService.addToCart(user.id, { product_id: productId, quantity });
       setCart(response.data);
+      if (!response.data?.items) {
+        await loadCart();
+      }
     } catch (error) {
       console.error('Failed to add to cart:', error);
       throw error;
@@ -78,8 +81,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const clearCart = async () => {
     if (!user?.id) return;
     try {
-      await cartService.clearCart(user.id);
-      setCart(null);
+      const response = await cartService.clearCart(user.id);
+      setCart(response.data ?? { id: 0, user_id: user.id, total: 0, items: [] });
     } catch (error) {
       console.error('Failed to clear cart:', error);
       throw error;

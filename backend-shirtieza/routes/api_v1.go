@@ -15,7 +15,11 @@ func SetupV1Routes(router *mux.Router) {
 
 	// Admin Subrouter with Middleware
 	admin := api.PathPrefix("/admin").Subrouter()
+	admin.Use(middleware.AuthMiddleware)
 	admin.Use(middleware.AdminMiddleware)
+
+	protected := api.NewRoute().Subrouter()
+	protected.Use(middleware.AuthMiddleware)
 
 	// ============ PRODUCTS ============
 	api.HandleFunc("/products", handlers.GetAllProducts).Methods("GET")
@@ -56,29 +60,30 @@ func SetupV1Routes(router *mux.Router) {
 	// ============ USERS ============
 	api.HandleFunc("/auth/register", handlers.RegisterUser).Methods("POST")
 	api.HandleFunc("/auth/login", handlers.LoginUser).Methods("POST")
-	api.HandleFunc("/users/{id}", handlers.GetUserProfile).Methods("GET")
-	api.HandleFunc("/users/{id}", handlers.UpdateUserProfile).Methods("PUT")
-	api.HandleFunc("/users/{id}/orders", handlers.GetUserOrders).Methods("GET")
+	protected.HandleFunc("/users/{id}", handlers.GetUserProfile).Methods("GET")
+	protected.HandleFunc("/users/{id}", handlers.UpdateUserProfile).Methods("PUT")
+	protected.HandleFunc("/users/{id}/orders", handlers.GetUserOrders).Methods("GET")
 
 	// Admin routes for users
 	admin.HandleFunc("/users", handlers.GetAllUsers).Methods("GET")
+	admin.HandleFunc("/users/{id}", handlers.AdminUpdateUser).Methods("PUT")
 	admin.HandleFunc("/stats", handlers.GetAdminStats).Methods("GET")
 
 	// ============ CART ============
-	api.HandleFunc("/cart/{user_id}", handlers.GetUserCart).Methods("GET")
-	api.HandleFunc("/cart/{user_id}/add", handlers.AddToCart).Methods("POST")
-	api.HandleFunc("/cart/item/{item_id}", handlers.UpdateCartItem).Methods("PUT")
-	api.HandleFunc("/cart/item/{item_id}", handlers.RemoveFromCart).Methods("DELETE")
-	api.HandleFunc("/cart/{user_id}/clear", handlers.ClearCart).Methods("DELETE")
+	protected.HandleFunc("/cart/{user_id}", handlers.GetUserCart).Methods("GET")
+	protected.HandleFunc("/cart/{user_id}/add", handlers.AddToCart).Methods("POST")
+	protected.HandleFunc("/cart/item/{item_id}", handlers.UpdateCartItem).Methods("PUT")
+	protected.HandleFunc("/cart/item/{item_id}", handlers.RemoveFromCart).Methods("DELETE")
+	protected.HandleFunc("/cart/{user_id}/clear", handlers.ClearCart).Methods("DELETE")
 
 	// ============ ORDERS ============
-	api.HandleFunc("/orders", handlers.CreateOrder).Methods("POST")
-	api.HandleFunc("/orders/{id}", handlers.GetOrderByID).Methods("GET")
+	protected.HandleFunc("/orders", handlers.CreateOrder).Methods("POST")
+	protected.HandleFunc("/orders/{id}", handlers.GetOrderByID).Methods("GET")
 
 	// Admin routes for orders
-	api.HandleFunc("/admin/orders", handlers.GetAllOrders).Methods("GET")
-	api.HandleFunc("/admin/orders/{id}/status", handlers.UpdateOrderStatus).Methods("PUT")
-	api.HandleFunc("/admin/orders/{id}/cancel", handlers.CancelOrder).Methods("PUT")
+	admin.HandleFunc("/orders", handlers.GetAllOrders).Methods("GET")
+	admin.HandleFunc("/orders/{id}/status", handlers.UpdateOrderStatus).Methods("PUT")
+	admin.HandleFunc("/orders/{id}/cancel", handlers.CancelOrder).Methods("PUT")
 
 	// Health check
 	api.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {

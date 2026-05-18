@@ -111,9 +111,14 @@ export default function OrderDetailPage() {
               <div className="divide-y divide-neutral-100">
                 {order.items.map((item) => (
                   <div key={item.id} className="flex justify-between items-center py-4 first:pt-0 last:pb-0">
-                    <div>
-                      <p className="text-sm font-semibold text-black">Product #{item.product_id}</p>
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-xl bg-neutral-100 overflow-hidden border border-neutral-100">
+                        {item.product?.image && <img src={item.product.image} alt={item.product.name} className="w-full h-full object-cover" />}
+                      </div>
+                      <div>
+                      <p className="text-sm font-semibold text-black">{item.product?.name || `Product #${item.product_id}`}</p>
                       <p className="text-[11px] text-neutral-400 mt-0.5">Qty: {item.quantity}</p>
+                      </div>
                     </div>
                     <p className="text-sm font-bold text-black">Rp {item.price.toLocaleString('id-ID')}</p>
                   </div>

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"backend-shirtieza/config"
 	"backend-shirtieza/middleware"
@@ -21,7 +22,13 @@ func main() {
 	finalHandler := middleware.EnableCORS(router)
 
 	//Server configuration
-	port := ":8080"
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+	if port[0] != ':' {
+		port = ":" + port
+	}
 
 	fmt.Println("========================================")
 	fmt.Printf("🚀 Server starting on %s\n", port)

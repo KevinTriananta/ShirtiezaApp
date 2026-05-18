@@ -151,7 +151,21 @@ func UpdateProduct(w http.ResponseWriter, r *http.Request) {
 	id := vars["id"]
 
 	var product models.Product
-	var updateData models.Product
+	var updateData struct {
+		Name          string   `json:"name"`
+		Slug          string   `json:"slug"`
+		Description   string   `json:"description"`
+		Price         float64  `json:"price"`
+		DiscountPrice *float64 `json:"discount_price"`
+		Image         string   `json:"image"`
+		Images        string   `json:"images"`
+		Colors        string   `json:"colors"`
+		Stock         int      `json:"stock"`
+		Rating        float64  `json:"rating"`
+		ReviewCount   int      `json:"review_count"`
+		IsFeatured    bool     `json:"is_featured"`
+		CategoryID    uint     `json:"category_id"`
+	}
 
 	if err := config.DB.First(&product, id).Error; err != nil {
 		utils.RespondWithError(w, http.StatusNotFound, "Product not found", err.Error())
@@ -163,10 +177,27 @@ func UpdateProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := config.DB.Model(&product).Updates(updateData).Error; err != nil {
+	updates := map[string]interface{}{
+		"name":           updateData.Name,
+		"slug":           updateData.Slug,
+		"description":    updateData.Description,
+		"price":          updateData.Price,
+		"discount_price": updateData.DiscountPrice,
+		"image":          updateData.Image,
+		"images":         updateData.Images,
+		"colors":         updateData.Colors,
+		"stock":          updateData.Stock,
+		"rating":         updateData.Rating,
+		"review_count":   updateData.ReviewCount,
+		"is_featured":    updateData.IsFeatured,
+		"category_id":    updateData.CategoryID,
+	}
+
+	if err := config.DB.Model(&product).Updates(updates).Error; err != nil {
 		utils.RespondWithError(w, http.StatusInternalServerError, "Failed to update product", err.Error())
 		return
 	}
+	config.DB.Preload("Category").Preload("Collections").First(&product, id)
 
 	utils.RespondWithSuccess(w, http.StatusOK, "Product updated successfully", product)
 }

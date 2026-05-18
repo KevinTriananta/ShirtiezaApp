@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { 
   Plus, 
   Search, 
-  Filter
 } from 'lucide-react';
 import { productService } from '../../services/productService';
 import { categoryService } from '../../services/categoryService';
@@ -17,6 +16,8 @@ export default function AdminProductsPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [stockFilter, setStockFilter] = useState('all');
 
   useEffect(() => {
     loadProducts();
@@ -66,10 +67,12 @@ export default function AdminProductsPage() {
     }
   };
 
-  const filteredProducts = products.filter(p => 
-    p.name.toLowerCase().includes(search.toLowerCase()) ||
-    p.slug.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredProducts = products.filter(p => {
+    const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase()) || p.slug.toLowerCase().includes(search.toLowerCase());
+    const matchesCategory = categoryFilter === 'all' || String(p.category?.id || (p as any).category_id) === categoryFilter;
+    const matchesStock = stockFilter === 'all' || (stockFilter === 'low' ? p.stock < 10 : p.stock >= 10);
+    return matchesSearch && matchesCategory && matchesStock;
+  });
 
   return (
     <div className="space-y-8">
@@ -86,10 +89,15 @@ export default function AdminProductsPage() {
           />
         </div>
         <div className="flex items-center gap-3">
-          <button className="flex items-center gap-2 px-5 py-3 bg-white border border-neutral-200 rounded-xl hover:bg-neutral-50 transition-all font-bold text-[11px] uppercase tracking-widest text-neutral-500">
-            <Filter size={16} />
-            Filter
-          </button>
+          <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="px-4 py-3 bg-white border border-neutral-200 rounded-xl text-[11px] font-bold uppercase tracking-widest text-neutral-500">
+            <option value="all">All Categories</option>
+            {categories.map((cat) => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
+          </select>
+          <select value={stockFilter} onChange={(e) => setStockFilter(e.target.value)} className="px-4 py-3 bg-white border border-neutral-200 rounded-xl text-[11px] font-bold uppercase tracking-widest text-neutral-500">
+            <option value="all">All Stock</option>
+            <option value="low">Low Stock</option>
+            <option value="ready">Ready Stock</option>
+          </select>
           <button 
             onClick={() => handleOpenModal()}
             className="flex items-center gap-2 px-5 py-3 bg-black text-white rounded-xl hover:shadow-lg hover:shadow-black/20 transition-all font-bold text-[11px] uppercase tracking-widest"

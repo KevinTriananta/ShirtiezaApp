@@ -19,6 +19,10 @@ import OrderDetailPage from '../pages/OrderDetailPage';
 import AdminDashboard from '../pages/admin/AdminDashboard';
 import AdminProductsPage from '../pages/admin/AdminProductsPage';
 import AdminUsersPage from '../pages/admin/AdminUsersPage';
+import AdminOrdersPage from '../pages/admin/AdminOrdersPage';
+import AdminSettingsPage from '../pages/admin/AdminSettingsPage';
+import AdminCatalogPage from '../pages/admin/AdminCatalogPage';
+import NotFoundPage from '../pages/NotFoundPage';
 
 // Layouts
 import Header from '../components/layout/Header';
@@ -86,16 +90,17 @@ function AppContent() {
                 <Routes>
                   <Route index element={<AdminDashboard />} />
                   <Route path="products" element={<AdminProductsPage />} />
+                  <Route path="catalog" element={<AdminCatalogPage />} />
                   <Route path="users" element={<AdminUsersPage />} />
-                  <Route path="orders" element={<div className="p-12 text-center text-neutral-400 font-bold uppercase tracking-widest border-2 border-dashed border-neutral-100 rounded-3xl">Orders Management Coming Soon</div>} />
-                  <Route path="settings" element={<div className="p-12 text-center text-neutral-400 font-bold uppercase tracking-widest border-2 border-dashed border-neutral-100 rounded-3xl">Settings Coming Soon</div>} />
+                  <Route path="orders" element={<AdminOrdersPage />} />
+                  <Route path="settings" element={<AdminSettingsPage />} />
                 </Routes>
               </AdminLayout>
             } />
           } />
 
           {/* Catch All */}
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>
       {!isAdminRoute && <Footer />}
@@ -110,4 +115,3 @@ export default function AppRoutes() {
     </BrowserRouter>
   );
 }
-

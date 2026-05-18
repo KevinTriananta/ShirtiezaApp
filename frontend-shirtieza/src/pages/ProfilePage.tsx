@@ -7,7 +7,7 @@ import type { Order } from '../types';
 
 export default function ProfilePage() {
   const navigate = useNavigate();
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, logout, updateUser } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -25,6 +25,16 @@ export default function ProfilePage() {
     if (!isAuthenticated) { navigate('/login'); }
     else if (user?.id) { loadOrders(); }
   }, [isAuthenticated, user?.id, navigate]);
+
+  useEffect(() => {
+    setFormData({
+      name: user?.name || '',
+      phone: user?.phone || '',
+      address: user?.address || '',
+      city: user?.city || '',
+      country: user?.country || '',
+    });
+  }, [user]);
 
   const loadOrders = async () => {
     try {
@@ -46,10 +56,10 @@ export default function ProfilePage() {
     setIsSaving(true);
     setMessage({ type: '', text: '' });
     try {
-      await userService.updateUserProfile(user.id, formData);
+      const response = await userService.updateUserProfile(user.id, formData);
+      updateUser({ ...user, ...response.data });
       setMessage({ type: 'success', text: 'Profile updated successfully!' });
       setIsEditing(false);
-      setTimeout(() => window.location.reload(), 1200);
     } catch (error) {
       console.error('Failed to update profile:', error);
       setMessage({ type: 'error', text: 'Failed to update profile. Please try again.' });

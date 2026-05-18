@@ -3,6 +3,7 @@ import { Link, useLocation, Navigate } from 'react-router-dom';
 import { 
   LayoutDashboard, 
   Package, 
+  Tags,
   Users, 
   ShoppingBag, 
   Settings, 
@@ -26,6 +27,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const menuItems = [
     { icon: <LayoutDashboard size={20} />, label: 'Dashboard', path: '/admin' },
     { icon: <Package size={20} />, label: 'Products', path: '/admin/products' },
+    { icon: <Tags size={20} />, label: 'Catalog', path: '/admin/catalog' },
     { icon: <ShoppingBag size={20} />, label: 'Orders', path: '/admin/orders' },
     { icon: <Users size={20} />, label: 'Users', path: '/admin/users' },
     { icon: <Settings size={20} />, label: 'Settings', path: '/admin/settings' },
@@ -40,7 +42,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             Shirtieza<span className="text-neutral-400">.</span>
           </Link>
           <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-400 mt-2">
-            Admin Panel
+            Admin Dashboard
           </p>
         </div>
 

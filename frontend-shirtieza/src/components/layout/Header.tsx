@@ -11,6 +11,8 @@ export default function Header() {
   const { items } = useCart();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     const handleScroll = () => {
@@ -26,8 +28,17 @@ export default function Header() {
     setIsMenuOpen(false);
   };
 
-  const cartCount = items.length;
+  const cartCount = items.reduce((total, item) => total + item.quantity, 0);
   const isAdmin = user?.role === 'admin';
+
+  const submitSearch = (event: React.FormEvent) => {
+    event.preventDefault();
+    const query = searchTerm.trim();
+    if (!query) return;
+    navigate(`/products?search=${encodeURIComponent(query)}`);
+    setIsSearchOpen(false);
+    setSearchTerm('');
+  };
 
   return (
     <header
@@ -90,7 +101,7 @@ export default function Header() {
             )}
 
             {/* Search */}
-            <button className="hidden sm:flex w-10 h-10 items-center justify-center rounded-full text-neutral-400 hover:text-black hover:bg-neutral-50 transition-all">
+            <button onClick={() => setIsSearchOpen(true)} className="hidden sm:flex w-10 h-10 items-center justify-center rounded-full text-neutral-400 hover:text-black hover:bg-neutral-50 transition-all">
               <Search size={18} strokeWidth={2} />
             </button>
 
@@ -166,7 +177,7 @@ export default function Header() {
                 className="text-sm font-black uppercase tracking-[0.2em] text-white bg-black p-4 rounded-2xl flex items-center justify-between"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Admin Panel
+                Admin Dashboard
                 <ShieldCheck size={18} />
               </Link>
             )}
@@ -201,7 +212,15 @@ export default function Header() {
           </nav>
         </div>
       )}
+
+      {isSearchOpen && (
+        <div className="fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm flex items-start justify-center px-6 pt-28" onClick={() => setIsSearchOpen(false)}>
+          <form onSubmit={submitSearch} onClick={(e) => e.stopPropagation()} className="w-full max-w-2xl bg-white rounded-3xl p-4 shadow-2xl flex gap-3">
+            <input autoFocus value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Search hoodie, tee, jacket..." className="flex-1 px-4 py-3 outline-none text-lg font-bold" />
+            <button className="bg-black text-white px-6 rounded-2xl text-[11px] font-black uppercase tracking-widest">Search</button>
+          </form>
+        </div>
+      )}
     </header>
   );
 }
-

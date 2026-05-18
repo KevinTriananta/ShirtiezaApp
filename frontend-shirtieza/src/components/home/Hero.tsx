@@ -1,15 +1,16 @@
 import { Link } from 'react-router-dom';
 import { ShoppingBag } from 'lucide-react';
+import heroBg from '../../assets/hero-bg.png';
 
 export default function Hero() {
   return (
     <section className="relative h-[92vh] min-h-[600px] overflow-hidden group">
       <img
-        src="https://images.unsplash.com/photo-1550991152-e23e989739ee?q=80&w=2000&auto=format&fit=crop"
+        src={heroBg}
         alt="Shirtieza Hero"
-        className="w-full h-full object-cover grayscale-[20%] scale-105 group-hover:scale-100 group-hover:grayscale-0 transition-all duration-[2000ms] ease-out"
+        className="h-full w-full object-cover object-center grayscale-[20%] scale-105 group-hover:scale-100 group-hover:grayscale-0 transition-all duration-[2000ms] ease-out"
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10" />
       
       <div className="absolute inset-0 flex items-center">
         <div className="max-w-7xl mx-auto px-6 lg:px-8 w-full">

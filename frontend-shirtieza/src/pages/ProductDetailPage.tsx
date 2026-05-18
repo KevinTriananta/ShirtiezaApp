@@ -17,6 +17,8 @@ export default function ProductDetailPage() {
   const [addedSuccess, setAddedSuccess] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [selectedImage, setSelectedImage] = useState(0);
+  const [selectedSize, setSelectedSize] = useState('M');
+  const [selectedColor, setSelectedColor] = useState('');
   const { addToCart } = useCart();
   const { isAuthenticated } = useAuth();
 
@@ -29,6 +31,7 @@ export default function ProductDetailPage() {
       setIsLoading(true);
       const response = await productService.getProductBySlug(slug!);
       setProduct(response.data);
+      setSelectedColor(response.data.colors?.[0] || 'Black');
     } catch (error) {
       console.error('Failed to load product:', error);
       setError('Product not found');
@@ -40,6 +43,10 @@ export default function ProductDetailPage() {
   const handleAddToCart = async () => {
     if (!isAuthenticated) {
       navigate('/login');
+      return;
+    }
+    if (!selectedSize) {
+      setError('Please select a size before adding to cart.');
       return;
     }
     setIsAdding(true);
@@ -199,6 +206,23 @@ export default function ProductDetailPage() {
             </div>
 
             {/* Quantity */}
+            <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-neutral-400 mb-3">Size</p>
+                <div className="flex flex-wrap gap-2">
+                  {['S', 'M', 'L', 'XL'].map((size) => (
+                    <button key={size} type="button" onClick={() => setSelectedSize(size)} className={`w-12 h-11 rounded-xl border text-xs font-black ${selectedSize === size ? 'bg-black text-white border-black' : 'border-neutral-200 text-neutral-500'}`}>{size}</button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-neutral-400 mb-3">Color</p>
+                <select value={selectedColor} onChange={(e) => setSelectedColor(e.target.value)} className="w-full h-11 rounded-xl border border-neutral-200 px-3 text-sm font-bold bg-white">
+                  {(product.colors?.length ? product.colors : ['Black']).map((color) => <option key={color}>{color}</option>)}
+                </select>
+              </div>
+            </div>
+
             <div className="mb-8">
               <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-neutral-400 mb-3">Quantity</p>
               <div className="inline-flex items-center border border-neutral-200 rounded-xl overflow-hidden">

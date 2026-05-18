@@ -1,4 +1,4 @@
-import { X, Upload, Check, Loader2 } from 'lucide-react';
+import { X, Upload, Check, Loader2, ImagePlus } from 'lucide-react';
 import type { Product, Category } from '../../../types';
 
 interface ProductModalProps {
@@ -12,6 +12,8 @@ interface ProductModalProps {
     price: number;
     stock: number;
     image: string;
+    images: string;
+    colors: string;
     category_id: number;
     is_featured: boolean;
   };
@@ -32,6 +34,36 @@ export default function ProductModal({
   isSaving
 }: ProductModalProps) {
   if (!isOpen) return null;
+
+  const useSampleImage = () => {
+    setFormData({
+      ...formData,
+      image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=900&auto=format&fit=crop',
+    });
+  };
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      alert('Please upload an image file such as PNG, JPG, JPEG, or WEBP.');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        if (!formData.image) {
+          setFormData({ ...formData, image: reader.result });
+        } else {
+          setFormData({
+            ...formData,
+            images: [formData.images, reader.result].filter(Boolean).join('\n'),
+          });
+        }
+      }
+    };
+    reader.readAsDataURL(file);
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -132,18 +164,51 @@ export default function ProductModal({
 
           <div className="col-span-2">
             <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400 mb-2.5 block">Imagery URL</label>
+            {formData.image && (
+              <div className="mb-4 w-32 h-40 rounded-2xl bg-neutral-100 overflow-hidden border border-neutral-200">
+                <img src={formData.image} alt="Product preview" className="w-full h-full object-cover" />
+              </div>
+            )}
             <div className="flex gap-4">
               <input
                 type="text"
-                placeholder="https://unsplash.com/..."
+                placeholder="Paste image URL or upload PNG/JPG/WEBP"
                 className="flex-grow px-5 py-4 bg-neutral-50 border border-neutral-200 rounded-2xl outline-none focus:ring-4 focus:ring-black/5 focus:border-black/20 transition-all font-medium"
                 value={formData.image}
                 onChange={(e) => setFormData({ ...formData, image: e.target.value })}
               />
-              <button type="button" className="p-4 bg-neutral-100 text-neutral-500 rounded-2xl hover:bg-black hover:text-white transition-all">
+              <label className="p-4 bg-neutral-100 text-neutral-500 rounded-2xl hover:bg-black hover:text-white transition-all cursor-pointer" title="Upload image file">
+                <ImagePlus size={20} />
+                <input type="file" accept="image/png,image/jpeg,image/jpg,image/webp,image/gif" onChange={handleFileUpload} className="hidden" />
+              </label>
+              <button type="button" onClick={useSampleImage} title="Use sample product image" className="p-4 bg-neutral-100 text-neutral-500 rounded-2xl hover:bg-black hover:text-white transition-all">
                 <Upload size={20} />
               </button>
             </div>
+          </div>
+
+          <div className="col-span-2">
+            <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400 mb-2.5 block">Additional Images</label>
+            <textarea
+              rows={3}
+              placeholder="One image URL per line. Uploaded images can be pasted here too."
+              className="w-full px-5 py-4 bg-neutral-50 border border-neutral-200 rounded-2xl outline-none focus:ring-4 focus:ring-black/5 focus:border-black/20 transition-all font-medium resize-none"
+              value={formData.images}
+              onChange={(e) => setFormData({ ...formData, images: e.target.value })}
+            />
+            <p className="text-[11px] text-neutral-400 mt-2">Main image plus these images will become the product gallery.</p>
+          </div>
+
+          <div className="col-span-2">
+            <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400 mb-2.5 block">Available Colors</label>
+            <input
+              type="text"
+              placeholder="Black, White, Navy, Stone"
+              className="w-full px-5 py-4 bg-neutral-50 border border-neutral-200 rounded-2xl outline-none focus:ring-4 focus:ring-black/5 focus:border-black/20 transition-all font-medium"
+              value={formData.colors}
+              onChange={(e) => setFormData({ ...formData, colors: e.target.value })}
+            />
+            <p className="text-[11px] text-neutral-400 mt-2">Pisahkan warna dengan koma. Contoh: Black, White, Navy.</p>
           </div>
 
           <div className="col-span-2 flex justify-end gap-4 mt-8 pt-6 border-t border-neutral-100">

@@ -6,6 +6,10 @@ interface UserProfile {
   address?: string;
   city?: string;
   country?: string;
+  zip_code?: string;
+  avatar?: string;
+  role?: string;
+  password?: string;
 }
 
 interface UserResponse {
@@ -38,6 +42,11 @@ export const userService = {
 
   getAllUsers: async () => {
     const response = await api.get<OrdersResponse>('/admin/users');
+    return response.data;
+  },
+
+  adminUpdateUser: async (id: number, data: UserProfile) => {
+    const response = await api.put<UserResponse>(`/admin/users/${id}`, data);
     return response.data;
   },
 };

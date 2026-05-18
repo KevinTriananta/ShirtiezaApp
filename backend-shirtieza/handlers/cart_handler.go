@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"backend-shirtieza/config"
+	"backend-shirtieza/middleware"
 	"backend-shirtieza/models"
 	"backend-shirtieza/utils"
 
@@ -16,6 +17,10 @@ import (
 func GetUserCart(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	userID := vars["user_id"]
+	if !canAccessCart(r, userID) {
+		utils.RespondWithError(w, http.StatusForbidden, "Forbidden", "You can only access your own cart")
+		return
+	}
 
 	var cart models.Cart
 	if err := config.DB.
@@ -23,9 +28,13 @@ func GetUserCart(w http.ResponseWriter, r *http.Request) {
 		Preload("Items").
 		Preload("Items.Product").
 		First(&cart).Error; err != nil {
-		// Cart tidak ditemukan, buat cart baru
-		cart.UserID = 0
-		fmt.Sscan(userID, &cart.UserID)
+		var userIDUint uint
+		fmt.Sscan(userID, &userIDUint)
+		cart = models.Cart{UserID: userIDUint, Items: []models.CartItem{}}
+		if err := config.DB.Create(&cart).Error; err != nil {
+			utils.RespondWithError(w, http.StatusInternalServerError, "Failed to create cart", err.Error())
+			return
+		}
 		utils.RespondWithSuccess(w, http.StatusOK, "Cart is empty", cart)
 		return
 	}
@@ -37,6 +46,10 @@ func GetUserCart(w http.ResponseWriter, r *http.Request) {
 func AddToCart(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	userID := vars["user_id"]
+	if !canAccessCart(r, userID) {
+		utils.RespondWithError(w, http.StatusForbidden, "Forbidden", "You can only update your own cart")
+		return
+	}
 
 	var cartItemData struct {
 		ProductID uint `json:"product_id"`
@@ -65,6 +78,14 @@ func AddToCart(w http.ResponseWriter, r *http.Request) {
 	var product models.Product
 	if err := config.DB.First(&product, cartItemData.ProductID).Error; err != nil {
 		utils.RespondWithError(w, http.StatusNotFound, "Product not found", err.Error())
+		return
+	}
+	if cartItemData.Quantity < 1 {
+		utils.RespondWithError(w, http.StatusBadRequest, "Quantity must be at least 1", nil)
+		return
+	}
+	if product.Stock < cartItemData.Quantity {
+		utils.RespondWithError(w, http.StatusBadRequest, "Insufficient stock", nil)
 		return
 	}
 
@@ -123,9 +144,18 @@ func UpdateCartItem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if updateData.Quantity < 1 {
+		utils.RespondWithError(w, http.StatusBadRequest, "Quantity must be at least 1", nil)
+		return
+	}
+
 	var cartItem models.CartItem
-	if err := config.DB.First(&cartItem, itemID).Error; err != nil {
+	if err := config.DB.Preload("Cart").First(&cartItem, itemID).Error; err != nil {
 		utils.RespondWithError(w, http.StatusNotFound, "Cart item not found", err.Error())
+		return
+	}
+	if !canAccessCart(r, fmt.Sprintf("%d", cartItem.Cart.UserID)) {
+		utils.RespondWithError(w, http.StatusForbidden, "Forbidden", "You can only update your own cart")
 		return
 	}
 
@@ -139,7 +169,13 @@ func UpdateCartItem(w http.ResponseWriter, r *http.Request) {
 	// Recalculate cart total
 	calculateCartTotal(cartItem.CartID)
 
-	utils.RespondWithSuccess(w, http.StatusOK, "Cart item updated successfully", cartItem)
+	cart, err := fetchCartByID(cartItem.CartID)
+	if err != nil {
+		utils.RespondWithError(w, http.StatusInternalServerError, "Failed to fetch cart", err.Error())
+		return
+	}
+
+	utils.RespondWithSuccess(w, http.StatusOK, "Cart item updated successfully", cart)
 }
 
 // RemoveFromCart - Menghapus item dari keranjang
@@ -148,8 +184,12 @@ func RemoveFromCart(w http.ResponseWriter, r *http.Request) {
 	itemID := vars["item_id"]
 
 	var cartItem models.CartItem
-	if err := config.DB.First(&cartItem, itemID).Error; err != nil {
+	if err := config.DB.Preload("Cart").First(&cartItem, itemID).Error; err != nil {
 		utils.RespondWithError(w, http.StatusNotFound, "Cart item not found", err.Error())
+		return
+	}
+	if !canAccessCart(r, fmt.Sprintf("%d", cartItem.Cart.UserID)) {
+		utils.RespondWithError(w, http.StatusForbidden, "Forbidden", "You can only update your own cart")
 		return
 	}
 
@@ -163,13 +203,23 @@ func RemoveFromCart(w http.ResponseWriter, r *http.Request) {
 	// Recalculate cart total
 	calculateCartTotal(cartID)
 
-	utils.RespondWithSuccess(w, http.StatusOK, "Item removed from cart successfully", nil)
+	cart, err := fetchCartByID(cartID)
+	if err != nil {
+		utils.RespondWithError(w, http.StatusInternalServerError, "Failed to fetch cart", err.Error())
+		return
+	}
+
+	utils.RespondWithSuccess(w, http.StatusOK, "Item removed from cart successfully", cart)
 }
 
 // ClearCart - Mengosongkan keranjang
 func ClearCart(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	userID := vars["user_id"]
+	if !canAccessCart(r, userID) {
+		utils.RespondWithError(w, http.StatusForbidden, "Forbidden", "You can only update your own cart")
+		return
+	}
 
 	var cart models.Cart
 	if err := config.DB.Where("user_id = ?", userID).First(&cart).Error; err != nil {
@@ -185,7 +235,8 @@ func ClearCart(w http.ResponseWriter, r *http.Request) {
 	cart.Total = 0
 	config.DB.Save(&cart)
 
-	utils.RespondWithSuccess(w, http.StatusOK, "Cart cleared successfully", nil)
+	cart.Items = []models.CartItem{}
+	utils.RespondWithSuccess(w, http.StatusOK, "Cart cleared successfully", cart)
 }
 
 // Helper function to calculate cart total
@@ -200,4 +251,18 @@ func calculateCartTotal(cartID uint) {
 	}
 
 	config.DB.Model(&models.Cart{}).Where("id = ?", cartID).Update("total", total)
+}
+
+func fetchCartByID(cartID uint) (models.Cart, error) {
+	var cart models.Cart
+	err := config.DB.Preload("Items").Preload("Items.Product").First(&cart, cartID).Error
+	return cart, err
+}
+
+func canAccessCart(r *http.Request, requestedID string) bool {
+	if middleware.CurrentUserRole(r) == "admin" {
+		return true
+	}
+	currentUserID, ok := middleware.CurrentUserID(r)
+	return ok && requestedID == fmt.Sprintf("%d", currentUserID)
 }

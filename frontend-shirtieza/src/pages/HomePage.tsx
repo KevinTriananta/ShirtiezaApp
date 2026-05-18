@@ -10,6 +10,7 @@ import Features from '../components/home/Features';
 import Newsletter from '../components/home/Newsletter';
 import PromoBanner from '../components/home/PromoBanner';
 import ExclusiveDrop from '../components/home/ExclusiveDrop';
+import { demoCategories, demoProducts } from '../data/demoData';
 
 export default function HomePage() {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
@@ -30,11 +31,14 @@ export default function HomePage() {
         categoryService.getAllCategories(),
       ]);
 
-      setFeaturedProducts(featuredRes.data || []);
-      setNewArrivals(productsRes.data?.data || []);
-      setCategories(categoriesRes.data || []);
+      setFeaturedProducts((featuredRes.data || []).length ? featuredRes.data : demoProducts.filter((product) => product.is_featured));
+      setNewArrivals((productsRes.data?.data || []).length ? productsRes.data.data : demoProducts);
+      setCategories((categoriesRes.data || []).length ? categoriesRes.data : demoCategories);
     } catch (error) {
       console.error('Failed to load homepage data:', error);
+      setFeaturedProducts(demoProducts.filter((product) => product.is_featured));
+      setNewArrivals(demoProducts);
+      setCategories(demoCategories);
     } finally {
       setIsLoading(false);
     }

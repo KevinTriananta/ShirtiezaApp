@@ -4,7 +4,9 @@ import { ChevronLeft, ChevronRight, SlidersHorizontal, X } from 'lucide-react';
 import type { Product, Category } from '../types';
 import { productService } from '../services/productService';
 import { categoryService } from '../services/categoryService';
+import { collectionService } from '../services/collectionService';
 import ProductCard from '../components/common/ProductCard';
+import { demoCategories, demoProducts } from '../data/demoData';
 
 export default function ProductsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -17,16 +19,26 @@ export default function ProductsPage() {
   const page = parseInt(searchParams.get('page') || '1');
   const category = searchParams.get('category');
   const search = searchParams.get('search');
+  const collection = searchParams.get('collection');
   const sortBy = searchParams.get('sort_by') || 'newest';
 
   useEffect(() => {
     loadData();
     loadCategories();
-  }, [page, category, search, sortBy]);
+  }, [page, category, search, sortBy, collection]);
 
   const loadData = async () => {
     try {
       setIsLoading(true);
+      if (collection) {
+        const colRes = await collectionService.getCollectionBySlug(collection);
+        const prodRes = await productService.getProductsByCollection(colRes.data.id);
+        const nextProducts = prodRes.data.data || [];
+        setProducts(nextProducts);
+        setTotalPages(1);
+        return;
+      }
+
       const categoryId = category ? parseInt(category) : undefined;
       const response = await productService.getAllProducts({
         page,
@@ -35,10 +47,13 @@ export default function ProductsPage() {
         search: search || undefined,
         sort_by: sortBy,
       });
-      setProducts(response.data.data);
-      setTotalPages(response.data.total_pages);
+      const nextProducts = response.data.data || [];
+      setProducts(nextProducts);
+      setTotalPages(response.data.total_pages || 1);
     } catch (error) {
       console.error('Failed to load products:', error);
+      setProducts(demoProducts);
+      setTotalPages(1);
     } finally {
       setIsLoading(false);
     }
@@ -47,9 +62,10 @@ export default function ProductsPage() {
   const loadCategories = async () => {
     try {
       const response = await categoryService.getAllCategories();
-      setCategories(response.data);
+      setCategories(response.data?.length ? response.data : demoCategories);
     } catch (error) {
       console.error('Failed to load categories:', error);
+      setCategories(demoCategories);
     }
   };
 

@@ -150,7 +150,13 @@ func RemoveProductFromCollection(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := config.DB.Model(&collection).Association("Products").Delete(productID); err != nil {
+	var product models.Product
+	if err := config.DB.First(&product, productID).Error; err != nil {
+		utils.RespondWithError(w, http.StatusNotFound, "Product not found", err.Error())
+		return
+	}
+
+	if err := config.DB.Model(&collection).Association("Products").Delete(&product); err != nil {
 		utils.RespondWithError(w, http.StatusInternalServerError, "Failed to remove product from collection", err.Error())
 		return
 	}

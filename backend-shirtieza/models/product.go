@@ -15,6 +15,7 @@ type Product struct {
 	DiscountPrice *float64 `json:"discount_price"`
 	Image         string   `json:"image"`
 	Images        string   `json:"images" gorm:"type:text"` // JSON string of images array
+	Colors        string   `json:"colors" gorm:"type:text"` // JSON string of colors array
 	Stock         int      `json:"stock" gorm:"default:0"`
 	Rating        float64  `json:"rating" gorm:"default:0"`
 	ReviewCount   int      `json:"review_count" gorm:"default:0"`
@@ -43,6 +44,8 @@ type ProductResponse struct {
 	Price         float64      `json:"price"`
 	DiscountPrice *float64     `json:"discount_price"`
 	Image         string       `json:"image"`
+	Images        string       `json:"images"`
+	Colors        string       `json:"colors"`
 	Stock         int          `json:"stock"`
 	Rating        float64      `json:"rating"`
 	ReviewCount   int          `json:"review_count"`

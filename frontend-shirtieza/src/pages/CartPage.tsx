@@ -15,6 +15,13 @@ export default function CartPage() {
   const [error, setError] = useState('');
   const [shippingCost] = useState(50000);
   const [taxRate] = useState(0.05);
+  const [shipping, setShipping] = useState({
+    address: user?.address || '',
+    city: user?.city || '',
+    country: user?.country || 'Indonesia',
+    zip: '',
+    paymentMethod: 'bank_transfer',
+  });
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -60,6 +67,10 @@ export default function CartPage() {
 
   const handleCheckout = async () => {
     if (!user) return;
+    if (!shipping.address.trim() || !shipping.city.trim() || !shipping.zip.trim()) {
+      setError('Please complete shipping address before checkout.');
+      return;
+    }
     setError('');
     setIsCheckingOut(true);
     try {
@@ -70,13 +81,13 @@ export default function CartPage() {
 
       const response = await orderService.createOrder({
         user_id: user.id,
-        shipping_address: user.address || 'Not provided',
-        shipping_city: user.city || 'Not provided',
-        shipping_country: user.country || 'Indonesia',
-        shipping_zip: '00000',
+        shipping_address: shipping.address,
+        shipping_city: shipping.city,
+        shipping_country: shipping.country,
+        shipping_zip: shipping.zip,
         shipping_cost: shippingCost,
         tax: Math.round(tax),
-        payment_method: 'bank_transfer',
+        payment_method: shipping.paymentMethod,
         items: orderItems,
       });
 
@@ -127,6 +138,20 @@ export default function CartPage() {
                   onRemove={removeFromCart}
                 />
               ))}
+            </div>
+            <div className="mt-8 bg-neutral-50 border border-neutral-100 rounded-2xl p-6">
+              <h2 className="text-sm font-black uppercase tracking-widest mb-5">Shipping & Payment</h2>
+              <div className="grid md:grid-cols-2 gap-4">
+                <input value={shipping.address} onChange={(e) => setShipping({ ...shipping, address: e.target.value })} placeholder="Street address" className="md:col-span-2 px-4 py-3 rounded-xl border border-neutral-200 text-sm" />
+                <input value={shipping.city} onChange={(e) => setShipping({ ...shipping, city: e.target.value })} placeholder="City" className="px-4 py-3 rounded-xl border border-neutral-200 text-sm" />
+                <input value={shipping.zip} onChange={(e) => setShipping({ ...shipping, zip: e.target.value })} placeholder="ZIP code" className="px-4 py-3 rounded-xl border border-neutral-200 text-sm" />
+                <input value={shipping.country} onChange={(e) => setShipping({ ...shipping, country: e.target.value })} placeholder="Country" className="px-4 py-3 rounded-xl border border-neutral-200 text-sm" />
+                <select value={shipping.paymentMethod} onChange={(e) => setShipping({ ...shipping, paymentMethod: e.target.value })} className="px-4 py-3 rounded-xl border border-neutral-200 text-sm bg-white">
+                  <option value="bank_transfer">Bank Transfer</option>
+                  <option value="cod">Cash on Delivery</option>
+                  <option value="ewallet">E-Wallet Demo</option>
+                </select>
+              </div>
             </div>
           </div>
 

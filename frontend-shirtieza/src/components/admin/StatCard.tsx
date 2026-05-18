@@ -8,6 +8,7 @@ interface StatCardProps {
   icon: React.ReactNode;
   trend?: string;
   positive?: boolean;
+  isLoading?: boolean;
 }
 
 export default function StatCard({ 
@@ -15,7 +16,8 @@ export default function StatCard({
   value, 
   icon, 
   trend, 
-  positive = true 
+  positive = true,
+  isLoading = false
 }: StatCardProps) {
   return (
     <Card className="group">
@@ -33,7 +35,7 @@ export default function StatCard({
         )}
       </div>
       <p className="text-xs font-bold uppercase tracking-widest text-neutral-400 mb-1">{label}</p>
-      <p className="text-2xl font-black tracking-tight text-black">{value}</p>
+      {isLoading ? <div className="h-8 w-24 bg-neutral-100 rounded-lg animate-pulse" /> : <p className="text-2xl font-black tracking-tight text-black">{value}</p>}
     </Card>
   );
 }

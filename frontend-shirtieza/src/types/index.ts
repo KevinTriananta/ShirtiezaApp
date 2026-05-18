@@ -4,6 +4,7 @@ export interface Product {
   slug: string;
   image: string;
   images?: string[];
+  colors?: string[];
   price: number;
   discount_price?: number;
   description: string;
@@ -73,6 +74,7 @@ export interface OrderItem {
   id: number;
   order_id: number;
   product_id: number;
+  product?: Product;
   quantity: number;
   price: number;
 }
@@ -92,6 +94,7 @@ export interface Order {
   status: string;
   payment_status: string;
   payment_method: string;
+  notes?: string;
   items: OrderItem[];
   created_at: string;
 }
@@ -101,5 +104,3 @@ export interface Tag {
   name: string;
   slug: string;
 }
-
-

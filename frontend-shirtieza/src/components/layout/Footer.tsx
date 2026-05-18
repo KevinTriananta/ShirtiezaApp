@@ -17,12 +17,12 @@ export default function Footer() {
             </p>
             <div className="flex gap-3 mt-6">
               {[
-                { icon: <Globe2 size={15} strokeWidth={1.5} />, label: 'Website' },
-                { icon: <ExternalLink size={15} strokeWidth={1.5} />, label: 'Social' },
+                { icon: <Globe2 size={15} strokeWidth={1.5} />, label: 'Website', href: 'https://shirtieza.local' },
+                { icon: <ExternalLink size={15} strokeWidth={1.5} />, label: 'Social', href: 'https://instagram.com/shirtieza' },
               ].map((social) => (
                 <a
                   key={social.label}
-                  href="#"
+                  href={social.href}
                   className="w-10 h-10 rounded-xl border border-neutral-800 flex items-center justify-center text-neutral-500 hover:text-white hover:border-neutral-500 hover:bg-neutral-800/50 transition-all duration-300"
                   aria-label={social.label}
                 >
@@ -62,14 +62,19 @@ export default function Footer() {
               Help
             </h4>
             <ul className="space-y-3">
-              {['Contact Us', 'FAQ', 'Shipping Info', 'Returns & Exchange'].map((item) => (
+              {[
+                ['Contact Us', 'mailto:info@shirtieza.com'],
+                ['FAQ', '/products'],
+                ['Shipping Info', '/cart'],
+                ['Returns & Exchange', '/profile'],
+              ].map(([item, href]) => (
                 <li key={item}>
-                  <a
-                    href="#"
+                  <Link
+                    to={href}
                     className="text-sm text-neutral-500 hover:text-white hover:translate-x-1 inline-block transition-all duration-300"
                   >
                     {item}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -105,12 +110,12 @@ export default function Footer() {
             &copy; {new Date().getFullYear()} Shirtieza. All rights reserved.
           </p>
           <div className="flex gap-6">
-            <a href="#" className="text-xs text-neutral-600 hover:text-neutral-400 transition-colors duration-200">
+            <Link to="/profile" className="text-xs text-neutral-600 hover:text-neutral-400 transition-colors duration-200">
               Privacy Policy
-            </a>
-            <a href="#" className="text-xs text-neutral-600 hover:text-neutral-400 transition-colors duration-200">
+            </Link>
+            <Link to="/profile" className="text-xs text-neutral-600 hover:text-neutral-400 transition-colors duration-200">
               Terms of Service
-            </a>
+            </Link>
           </div>
         </div>
       </div>

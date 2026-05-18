@@ -14,6 +14,8 @@ export function useProductForm(categories: Category[], onSuccess: () => void) {
     price: 0,
     stock: 0,
     image: '',
+    images: '',
+    colors: 'Black, White',
     category_id: categories[0]?.id || 0,
     is_featured: false
   };
@@ -30,7 +32,9 @@ export function useProductForm(categories: Category[], onSuccess: () => void) {
         price: product.price,
         stock: product.stock,
         image: product.image,
-        category_id: product.category.id,
+        images: product.images?.join('\n') || '',
+        colors: product.colors?.join(', ') || 'Black, White',
+        category_id: product.category?.id || (product as any).category_id || categories[0]?.id || 0,
         is_featured: product.is_featured || false
       });
     } else {
@@ -48,13 +52,17 @@ export function useProductForm(categories: Category[], onSuccess: () => void) {
     try {
       setIsSaving(true);
       if (selectedProduct) {
-        await productService.updateProduct(selectedProduct.id, formData);
+        const dataToSave = { ...formData };
+        if (!dataToSave.slug) {
+          dataToSave.slug = dataToSave.name.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        }
+        await productService.updateProduct(selectedProduct.id, serializeProductForm(dataToSave));
       } else {
         const dataToSave = { ...formData };
         if (!dataToSave.slug) {
-          dataToSave.slug = dataToSave.name.toLowerCase().replace(/ /g, '-');
+          dataToSave.slug = dataToSave.name.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
         }
-        await productService.createProduct(dataToSave);
+        await productService.createProduct(serializeProductForm(dataToSave));
       }
       setIsModalOpen(false);
       onSuccess();
@@ -74,5 +82,22 @@ export function useProductForm(categories: Category[], onSuccess: () => void) {
     isSaving,
     handleOpenModal,
     handleSave
+  };
+}
+
+function serializeProductForm(data: any) {
+  const extraImages = String(data.images || '')
+    .split('\n')
+    .map((image) => image.trim())
+    .filter(Boolean);
+  const colors = String(data.colors || '')
+    .split(',')
+    .map((color) => color.trim())
+    .filter(Boolean);
+
+  return {
+    ...data,
+    images: JSON.stringify(extraImages),
+    colors: JSON.stringify(colors.length ? colors : ['Black']),
   };
 }

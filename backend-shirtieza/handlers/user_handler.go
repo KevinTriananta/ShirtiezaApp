@@ -4,9 +4,11 @@ import (
 	"encoding/json"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"backend-shirtieza/config"
+	"backend-shirtieza/middleware"
 	"backend-shirtieza/models"
 	"backend-shirtieza/utils"
 
@@ -158,6 +160,10 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 func GetUserProfile(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	userID := vars["id"]
+	if !canAccessUser(r, userID) {
+		utils.RespondWithError(w, http.StatusForbidden, "Forbidden", "You can only access your own profile")
+		return
+	}
 
 	var user models.User
 	if err := config.DB.First(&user, userID).Error; err != nil {
@@ -172,6 +178,10 @@ func GetUserProfile(w http.ResponseWriter, r *http.Request) {
 func UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	userID := vars["id"]
+	if !canAccessUser(r, userID) {
+		utils.RespondWithError(w, http.StatusForbidden, "Forbidden", "You can only update your own profile")
+		return
+	}
 
 	var user models.User
 	if err := config.DB.First(&user, userID).Error; err != nil {
@@ -195,17 +205,18 @@ func UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := config.DB.Model(&user).Updates(map[string]interface{}{
-		"name":    input.Name,
-		"phone":   input.Phone,
-		"address": input.Address,
-		"city":    input.City,
-		"country": input.Country,
+		"name":     input.Name,
+		"phone":    input.Phone,
+		"address":  input.Address,
+		"city":     input.City,
+		"country":  input.Country,
 		"zip_code": input.ZipCode,
-		"avatar":  input.Avatar,
+		"avatar":   input.Avatar,
 	}).Error; err != nil {
 		utils.RespondWithError(w, http.StatusInternalServerError, "Failed to update profile", err.Error())
 		return
 	}
+	config.DB.First(&user, userID)
 
 	utils.RespondWithSuccess(w, http.StatusOK, "Profile updated successfully", userResponse(user))
 }
@@ -214,6 +225,10 @@ func UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
 func GetUserOrders(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	userID := vars["id"]
+	if !canAccessUser(r, userID) {
+		utils.RespondWithError(w, http.StatusForbidden, "Forbidden", "You can only access your own orders")
+		return
+	}
 
 	var orders []models.Order
 	if err := config.DB.
@@ -227,6 +242,14 @@ func GetUserOrders(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.RespondWithSuccess(w, http.StatusOK, "Orders fetched successfully", orders)
+}
+
+func canAccessUser(r *http.Request, requestedID string) bool {
+	if middleware.CurrentUserRole(r) == "admin" {
+		return true
+	}
+	currentUserID, ok := middleware.CurrentUserID(r)
+	return ok && requestedID == strconv.FormatUint(uint64(currentUserID), 10)
 }
 
 // GetAllUsers - Mendapatkan semua user (Admin only)
@@ -243,4 +266,65 @@ func GetAllUsers(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.RespondWithSuccess(w, http.StatusOK, "Users fetched successfully", responses)
+}
+
+func AdminUpdateUser(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	userID := vars["id"]
+
+	var user models.User
+	if err := config.DB.First(&user, userID).Error; err != nil {
+		utils.RespondWithError(w, http.StatusNotFound, "User not found", err.Error())
+		return
+	}
+
+	var input struct {
+		Name     string `json:"name"`
+		Phone    string `json:"phone"`
+		Address  string `json:"address"`
+		City     string `json:"city"`
+		Country  string `json:"country"`
+		ZipCode  string `json:"zip_code"`
+		Avatar   string `json:"avatar"`
+		Role     string `json:"role"`
+		Password string `json:"password"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		utils.RespondWithError(w, http.StatusBadRequest, "Invalid request payload", err.Error())
+		return
+	}
+
+	updates := map[string]interface{}{
+		"name":     input.Name,
+		"phone":    input.Phone,
+		"address":  input.Address,
+		"city":     input.City,
+		"country":  input.Country,
+		"zip_code": input.ZipCode,
+		"avatar":   input.Avatar,
+	}
+	if input.Role == "admin" || input.Role == "customer" {
+		updates["role"] = input.Role
+	}
+	if input.Password != "" {
+		if len(input.Password) < 6 {
+			utils.RespondWithError(w, http.StatusBadRequest, "Password must be at least 6 characters", nil)
+			return
+		}
+		hashed, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
+		if err != nil {
+			utils.RespondWithError(w, http.StatusInternalServerError, "Failed to process password", err.Error())
+			return
+		}
+		updates["password"] = string(hashed)
+	}
+
+	if err := config.DB.Model(&user).Updates(updates).Error; err != nil {
+		utils.RespondWithError(w, http.StatusInternalServerError, "Failed to update user", err.Error())
+		return
+	}
+	config.DB.First(&user, userID)
+
+	utils.RespondWithSuccess(w, http.StatusOK, "User updated successfully", userResponse(user))
 }

@@ -11,9 +11,10 @@ interface UserCardProps {
     city?: string;
     created_at: string;
   };
+  onView?: () => void;
 }
 
-export default function UserCard({ user }: UserCardProps) {
+export default function UserCard({ user, onView }: UserCardProps) {
   return (
     <Card className="group">
       <div className="flex items-start justify-between mb-6">
@@ -31,7 +32,7 @@ export default function UserCard({ user }: UserCardProps) {
             </Badge>
           </div>
         </div>
-        <button className="p-2 text-neutral-300 hover:text-black transition-colors">
+        <button onClick={onView} className="p-2 text-neutral-300 hover:text-black transition-colors">
           <MoreHorizontal size={18} />
         </button>
       </div>
@@ -52,8 +53,8 @@ export default function UserCard({ user }: UserCardProps) {
       </div>
 
       <div className="mt-6 pt-6 border-t border-neutral-50 flex gap-2">
-        <button className="flex-grow py-2.5 bg-neutral-50 hover:bg-black hover:text-white rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all duration-300">
-          Edit User
+        <button onClick={onView} className="flex-grow py-2.5 bg-neutral-50 hover:bg-black hover:text-white rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all duration-300">
+          View Detail
         </button>
         <button className="px-4 py-2.5 bg-neutral-50 hover:bg-red-50 hover:text-red-600 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all duration-300">
           Restrict

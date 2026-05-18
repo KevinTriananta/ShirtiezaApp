@@ -29,7 +29,7 @@ export default function ExclusiveDrop() {
             </p>
             
             <div className="flex gap-4">
-              <Link to="/products?collection=midnight">
+              <Link to="/products?collection=new-arrivals">
                 <Button variant="secondary" icon={<ArrowRight size={16} />}>
                   Explore Drop
                 </Button>
