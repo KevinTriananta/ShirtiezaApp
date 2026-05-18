@@ -6,6 +6,7 @@
 *.swp
 *.swo
 *.exe
+server
 dist/
 build/
 uploads/

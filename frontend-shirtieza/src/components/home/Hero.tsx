@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ShoppingBag } from 'lucide-react';
-import heroBg from '../../assets/hero-bg.png';
+import heroBg from '../../assets/hero-bg.webp';
 
 export default function Hero() {
   return (
