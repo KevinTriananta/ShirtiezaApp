@@ -399,7 +399,7 @@ Untuk issues atau questions:
 
 ## 📄 License
 
-Shirtieza Frontend © 2024
+Shirtieza Frontend © 2026
 
 ---
 

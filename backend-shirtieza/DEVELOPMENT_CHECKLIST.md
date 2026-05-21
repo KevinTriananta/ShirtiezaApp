@@ -269,7 +269,7 @@ Future dependencies:
 ---
 
 ## 📝 Last Updated
-January 2024
+January 2026
 
 ## 👥 Contributors
 - Initial setup & structure

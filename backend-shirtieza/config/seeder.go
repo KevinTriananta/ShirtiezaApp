@@ -1,15 +1,12 @@
 package config
 
 import (
-	"log"
-
 	"backend-shirtieza/models"
-
 	"golang.org/x/crypto/bcrypt"
+	"log"
 )
 
 func SeedDatabase() {
-
 	// Seed categories
 	categories := []models.Category{
 		{
@@ -43,13 +40,11 @@ func SeedDatabase() {
 			Icon:        "✨",
 		},
 	}
-
 	for _, category := range categories {
 		if err := DB.FirstOrCreate(&category, models.Category{Slug: category.Slug}).Error; err != nil {
 			log.Printf("Error seeding category %s: %v", category.Name, err)
 		}
 	}
-
 	// Seed collections
 	collections := []models.Collection{
 		{
@@ -83,13 +78,12 @@ func SeedDatabase() {
 			IsActive:    true,
 		},
 	}
-
 	for _, collection := range collections {
 		if err := DB.FirstOrCreate(&collection, models.Collection{Slug: collection.Slug}).Error; err != nil {
 			log.Printf("Error seeding collection %s: %v", collection.Name, err)
 		}
 	}
-
+	seedCollectionCategories()
 	// Seed Products
 	products := []models.Product{
 		{
@@ -206,20 +200,17 @@ func SeedDatabase() {
 			CategoryID:  5,
 		},
 	}
-
 	for _, product := range products {
 		if err := DB.Where(models.Product{Slug: product.Slug}).Assign(product).FirstOrCreate(&product).Error; err != nil {
 			log.Printf("Error seeding product %s: %v", product.Name, err)
 		}
 	}
-
 	var newArrivals models.Collection
 	if err := DB.Where("slug = ?", "new-arrivals").First(&newArrivals).Error; err == nil {
 		var seededProducts []models.Product
 		DB.Limit(6).Find(&seededProducts)
 		DB.Model(&newArrivals).Association("Products").Replace(seededProducts)
 	}
-
 	// Seed Admin User
 	adminEmail := "admin@shirtieza.com"
 	var admin models.User
@@ -241,7 +232,6 @@ func SeedDatabase() {
 			"role":     "admin",
 		})
 	}
-
 	// Seed Demo Customer + Orders for a ready-to-present dashboard
 	demoEmail := "customer@shirtieza.com"
 	var demoUser models.User
@@ -260,7 +250,6 @@ func SeedDatabase() {
 		}
 		DB.Create(&demoUser)
 	}
-
 	var orderCount int64
 	DB.Model(&models.Order{}).Where("user_id = ?", demoUser.ID).Count(&orderCount)
 	if orderCount == 0 && demoUser.ID != 0 {
@@ -289,11 +278,34 @@ func SeedDatabase() {
 		}
 		DB.Create(&order)
 	}
-
 	var cart models.Cart
 	if err := DB.Where("user_id = ?", demoUser.ID).First(&cart).Error; err != nil && demoUser.ID != 0 {
 		DB.Create(&models.Cart{UserID: demoUser.ID})
 	}
-
 	log.Println("✅ Database seeding completed successfully")
+}
+
+func seedCollectionCategories() {
+	var womenCollection models.Collection
+	var menCollection models.Collection
+	DB.Where("slug = ?", "women-collection").First(&womenCollection)
+	DB.Where("slug = ?", "men-collection").First(&menCollection)
+
+	collectionCategories := []models.Category{
+		{Name: "Baby Tee", Slug: "baby-tee", Description: "Fitted tees for women collection", Icon: "T", CollectionID: &womenCollection.ID},
+		{Name: "Crop Top", Slug: "crop-top", Description: "Cropped tops for women collection", Icon: "T", CollectionID: &womenCollection.ID},
+		{Name: "Women Oversized Tee", Slug: "women-oversized-tee", Description: "Relaxed oversized tees for women", Icon: "T", CollectionID: &womenCollection.ID},
+		{Name: "Men Oversized Tee", Slug: "men-oversized-tee", Description: "Relaxed oversized tees for men", Icon: "T", CollectionID: &menCollection.ID},
+		{Name: "Men Hoodie", Slug: "men-hoodie", Description: "Hoodies for men collection", Icon: "H", CollectionID: &menCollection.ID},
+		{Name: "Men Shirt", Slug: "men-shirt", Description: "Shirts for men collection", Icon: "S", CollectionID: &menCollection.ID},
+	}
+
+	for _, category := range collectionCategories {
+		if category.CollectionID == nil || *category.CollectionID == 0 {
+			continue
+		}
+		if err := DB.Where(models.Category{Slug: category.Slug}).Assign(category).FirstOrCreate(&category).Error; err != nil {
+			log.Printf("Error seeding collection category %s: %v", category.Name, err)
+		}
+	}
 }

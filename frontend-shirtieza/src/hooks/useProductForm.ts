@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import type { Product, Category } from '../types';
 import { productService } from '../services/productService';
+import { useToast } from '../providers/ToastContext';
 
 export function useProductForm(categories: Category[], onSuccess: () => void) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const { notify } = useToast();
 
   const initialFormData = {
     name: '',
@@ -16,6 +18,7 @@ export function useProductForm(categories: Category[], onSuccess: () => void) {
     image: '',
     images: '',
     colors: 'Black, White',
+    collection_ids: [] as number[],
     category_id: categories[0]?.id || 0,
     is_featured: false
   };
@@ -34,6 +37,7 @@ export function useProductForm(categories: Category[], onSuccess: () => void) {
         image: product.image,
         images: product.images?.join('\n') || '',
         colors: product.colors?.join(', ') || 'Black, White',
+        collection_ids: product.collections?.map((collection) => collection.id) || [],
         category_id: product.category?.id || (product as any).category_id || categories[0]?.id || 0,
         is_featured: product.is_featured || false
       });
@@ -65,9 +69,10 @@ export function useProductForm(categories: Category[], onSuccess: () => void) {
         await productService.createProduct(serializeProductForm(dataToSave));
       }
       setIsModalOpen(false);
+      notify(selectedProduct ? 'Product updated successfully.' : 'Product published successfully.', 'success');
       onSuccess();
     } catch (err) {
-      alert('Failed to save product');
+      notify('Failed to save product.', 'error');
     } finally {
       setIsSaving(false);
     }

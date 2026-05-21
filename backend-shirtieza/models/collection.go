@@ -1,9 +1,8 @@
 package models
 
 import (
-	"time"
-
 	"gorm.io/gorm"
+	"time"
 )
 
 type Collection struct {
@@ -16,7 +15,6 @@ type Collection struct {
 	CreatedAt   time.Time      `json:"created_at"`
 	UpdatedAt   time.Time      `json:"updated_at"`
 	DeletedAt   gorm.DeletedAt `json:"deleted_at" gorm:"index"`
-
 	// Relations
 	Products []Product `json:"products,omitempty" gorm:"many2many:collection_products;"`
 }

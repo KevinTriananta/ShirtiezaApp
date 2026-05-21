@@ -381,7 +381,7 @@ go build -o shirtieza ./cmd/main.go
 
 ## 📄 License
 
-Shirtieza E-Commerce © 2024
+Shirtieza E-Commerce © 2026
 
 ## 🎉 Success!
 

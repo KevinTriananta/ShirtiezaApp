@@ -1,26 +1,23 @@
 package main
 
 import (
+	"backend-shirtieza/config"
+	"backend-shirtieza/middleware"
+	"backend-shirtieza/routes"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
-
-	"backend-shirtieza/config"
-	"backend-shirtieza/middleware"
-	"backend-shirtieza/routes"
 )
 
 func main() {
 	// Initialize database
 	config.InitDB()
+	config.MigrateAndSeedWilayah()
 	config.SeedDatabase()
 	defer config.CloseDB()
-
 	router := routes.SetupRoutes()
-
 	finalHandler := middleware.EnableCORS(router)
-
 	//Server configuration
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -29,7 +26,6 @@ func main() {
 	if port[0] != ':' {
 		port = ":" + port
 	}
-
 	fmt.Println("========================================")
 	fmt.Printf("🚀 Server starting on %s\n", port)
 	fmt.Println("📚 API Documentation:")
@@ -43,7 +39,6 @@ func main() {
 	fmt.Println("   - POST /api/v1/orders              - Create order")
 	fmt.Println("========================================")
 	fmt.Println("")
-
 	// Gunakan finalHandler, bukan router langsung
 	if err := http.ListenAndServe(port, finalHandler); err != nil {
 		log.Fatalf("Failed to start server: %v", err)

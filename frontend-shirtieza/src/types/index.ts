@@ -31,6 +31,8 @@ export interface Category {
   id: number;
   name: string;
   slug: string;
+  collection_id?: number;
+  collection?: Collection;
   icon?: string;
   description?: string;
   image?: string;

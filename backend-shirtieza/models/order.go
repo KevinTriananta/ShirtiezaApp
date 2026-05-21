@@ -1,9 +1,8 @@
 package models
 
 import (
-	"time"
-
 	"gorm.io/gorm"
+	"time"
 )
 
 type Order struct {
@@ -11,33 +10,27 @@ type Order struct {
 	OrderNumber string `json:"order_number" gorm:"uniqueIndex"`
 	UserID      uint   `json:"user_id" gorm:"not null"`
 	User        *User  `json:"user,omitempty" gorm:"foreignKey:UserID"`
-
 	// Address Info
 	ShippingAddress string `json:"shipping_address" gorm:"not null"`
 	ShippingCity    string `json:"shipping_city" gorm:"not null"`
 	ShippingCountry string `json:"shipping_country" gorm:"not null"`
 	ShippingZip     string `json:"shipping_zip" gorm:"not null"`
-
 	// Order Info
 	Subtotal     float64 `json:"subtotal" gorm:"not null"`
 	ShippingCost float64 `json:"shipping_cost" gorm:"default:0"`
 	Tax          float64 `json:"tax" gorm:"default:0"`
 	Total        float64 `json:"total" gorm:"not null"`
-
 	// Status: pending, processing, shipped, delivered, cancelled
-	Status        string `json:"status" gorm:"default:'pending'"`
-	PaymentStatus string `json:"payment_status" gorm:"default:'unpaid'"` // paid, unpaid, refunded
-	PaymentMethod string `json:"payment_method"`
-	Notes         string `json:"notes" gorm:"type:text"`
-
-	CreatedAt time.Time      `json:"created_at"`
-	UpdatedAt time.Time      `json:"updated_at"`
-	DeletedAt gorm.DeletedAt `json:"deleted_at" gorm:"index"`
-
+	Status        string         `json:"status" gorm:"default:'pending'"`
+	PaymentStatus string         `json:"payment_status" gorm:"default:'unpaid'"` // paid, unpaid, refunded
+	PaymentMethod string         `json:"payment_method"`
+	Notes         string         `json:"notes" gorm:"type:text"`
+	CreatedAt     time.Time      `json:"created_at"`
+	UpdatedAt     time.Time      `json:"updated_at"`
+	DeletedAt     gorm.DeletedAt `json:"deleted_at" gorm:"index"`
 	// Relations
 	Items []OrderItem `json:"items,omitempty" gorm:"foreignKey:OrderID"`
 }
-
 type OrderItem struct {
 	ID        uint           `gorm:"primaryKey" json:"id"`
 	OrderID   uint           `json:"order_id" gorm:"not null"`
@@ -50,7 +43,6 @@ type OrderItem struct {
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `json:"deleted_at" gorm:"index"`
 }
-
 type OrderResponse struct {
 	ID            uint                `json:"id"`
 	OrderNumber   string              `json:"order_number"`
@@ -63,7 +55,6 @@ type OrderResponse struct {
 	Items         []OrderItemResponse `json:"items"`
 	CreatedAt     time.Time           `json:"created_at"`
 }
-
 type OrderItemResponse struct {
 	Product  *ProductResponse `json:"product"`
 	Quantity int              `json:"quantity"`

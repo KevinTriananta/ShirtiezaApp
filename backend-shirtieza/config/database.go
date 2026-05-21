@@ -1,14 +1,12 @@
 package config
 
 import (
-	"fmt"
-	"log"
-	"os"
-
 	"backend-shirtieza/models"
-
+	"fmt"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"log"
+	"os"
 )
 
 var DB *gorm.DB
@@ -23,9 +21,7 @@ func InitDB() {
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
-
 	fmt.Println("✅ Database connected successfully")
-
 	// Auto migrate semua models
 	err = DB.AutoMigrate(
 		&models.User{},
@@ -38,15 +34,11 @@ func InitDB() {
 		&models.Order{},
 		&models.OrderItem{},
 	)
-
 	if err != nil {
 		log.Fatalf("Failed to migrate database: %v", err)
 	}
-
 	fmt.Println("✅ Database migration completed")
-
 }
-
 func CloseDB() {
 	sqlDB, err := DB.DB()
 	if err != nil {

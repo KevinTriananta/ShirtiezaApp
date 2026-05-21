@@ -5,23 +5,29 @@ import {
 } from 'lucide-react';
 import { productService } from '../../services/productService';
 import { categoryService } from '../../services/categoryService';
-import type { Product, Category } from '../../types';
+import { collectionService } from '../../services/collectionService';
+import type { Product, Category, Collection } from '../../types';
 import ProductTable from '../../components/admin/products/ProductTable';
 import ProductModal from '../../components/admin/products/ProductModal';
+import ConfirmDialog from '../../components/ui/ConfirmDialog';
+import { useToast } from '../../providers/ToastContext';
 
 import { useProductForm } from '../../hooks/useProductForm';
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [collections, setCollections] = useState<Collection[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [stockFilter, setStockFilter] = useState('all');
+  const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
+  const { notify } = useToast();
 
   useEffect(() => {
     loadProducts();
-    loadCategories();
+    loadCatalog();
   }, []);
 
   const loadProducts = async () => {
@@ -36,12 +42,16 @@ export default function AdminProductsPage() {
     }
   };
 
-  const loadCategories = async () => {
+  const loadCatalog = async () => {
     try {
-      const res = await categoryService.getAllCategories();
-      setCategories(res.data || []);
+      const [catRes, colRes] = await Promise.all([
+        categoryService.getAllCategories(),
+        collectionService.getAllCollections(),
+      ]);
+      setCategories(catRes.data || []);
+      setCollections(colRes.data || []);
     } catch (err) {
-      console.error('Failed to load categories', err);
+      console.error('Failed to load catalog', err);
     }
   };
 
@@ -56,14 +66,15 @@ export default function AdminProductsPage() {
     handleSave
   } = useProductForm(categories, loadProducts);
 
-  const handleDelete = async (id: number) => {
-    if (window.confirm('Are you sure you want to delete this product?')) {
-      try {
-        await productService.deleteProduct(id);
-        loadProducts();
-      } catch (err) {
-        alert('Failed to delete product');
-      }
+  const handleDelete = async () => {
+    if (!pendingDeleteId) return;
+    try {
+      await productService.deleteProduct(pendingDeleteId);
+      setPendingDeleteId(null);
+      notify('Product deleted successfully.', 'success');
+      loadProducts();
+    } catch (err) {
+      notify('Failed to delete product.', 'error');
     }
   };
 
@@ -112,7 +123,7 @@ export default function AdminProductsPage() {
         products={filteredProducts} 
         isLoading={isLoading} 
         onEdit={handleOpenModal} 
-        onDelete={handleDelete} 
+        onDelete={setPendingDeleteId} 
       />
 
       <ProductModal 
@@ -123,7 +134,18 @@ export default function AdminProductsPage() {
         setFormData={setFormData}
         selectedProduct={selectedProduct}
         categories={categories}
+        collections={collections}
         isSaving={isSaving}
+      />
+
+      <ConfirmDialog
+        isOpen={pendingDeleteId !== null}
+        title="Delete product?"
+        message="This product will be removed from the admin catalog and storefront."
+        confirmLabel="Delete"
+        isDanger
+        onCancel={() => setPendingDeleteId(null)}
+        onConfirm={handleDelete}
       />
     </div>
   );

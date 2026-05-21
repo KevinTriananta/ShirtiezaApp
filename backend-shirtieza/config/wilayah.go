@@ -1,0 +1,115 @@
+package config
+
+import (
+	"database/sql"
+	"encoding/json"
+	"fmt"
+	"log"
+	"os"
+	"path/filepath"
+
+	"github.com/vandyahmad24/golang-wilayah-indonesia/wilayah"
+	"gorm.io/gorm/clause"
+)
+
+func MigrateAndSeedWilayah() {
+	sqlDB, err := DB.DB()
+	if err != nil {
+		log.Printf("Wilayah database connection error: %v", err)
+		return
+	}
+	if err := migrateWilayah(sqlDB); err != nil {
+		log.Printf("Wilayah migration error: %v", err)
+		return
+	}
+	if err := seedWilayah(sqlDB, wilayahDataPath()); err != nil {
+		log.Printf("Wilayah seed error: %v", err)
+		return
+	}
+	log.Println("✅ Wilayah migration and seed completed")
+}
+
+func migrateWilayah(db *sql.DB) error {
+	queries := []string{
+		`CREATE TABLE IF NOT EXISTS provinces (id INT PRIMARY KEY, name VARCHAR(100) NOT NULL, code VARCHAR(10) NOT NULL)`,
+		`CREATE TABLE IF NOT EXISTS cities (id INT PRIMARY KEY, type VARCHAR(50) NOT NULL, name VARCHAR(100) NOT NULL, code VARCHAR(10) NOT NULL, full_code VARCHAR(10) NOT NULL, province_id INT NOT NULL, INDEX idx_cities_province_id (province_id))`,
+		`CREATE TABLE IF NOT EXISTS districts (id INT PRIMARY KEY, name VARCHAR(100) NOT NULL, code VARCHAR(10) NOT NULL, full_code VARCHAR(10) NOT NULL, city_id INT NOT NULL, INDEX idx_districts_city_id (city_id))`,
+		`CREATE TABLE IF NOT EXISTS villages (id INT PRIMARY KEY, name VARCHAR(100) NOT NULL, code VARCHAR(10) NOT NULL, full_code VARCHAR(10) NOT NULL, pos_code VARCHAR(10) NOT NULL, district_id INT NOT NULL, INDEX idx_villages_district_id (district_id))`,
+	}
+	for _, query := range queries {
+		if _, err := db.Exec(query); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func seedWilayah(db *sql.DB, dataPath string) error {
+	if wilayahAlreadySeeded() {
+		log.Println("Wilayah seed skipped: data already exists")
+		return nil
+	}
+	if err := seedJSON(filepath.Join(dataPath, "provinsi.json"), func(items []wilayah.Province) error {
+		return insertWilayahBatch("provinces", items)
+	}); err != nil {
+		return err
+	}
+	if err := seedJSON(filepath.Join(dataPath, "kota.json"), func(items []wilayah.City) error {
+		return insertWilayahBatch("cities", items)
+	}); err != nil {
+		return err
+	}
+	if err := seedJSON(filepath.Join(dataPath, "kecamatan.json"), func(items []wilayah.District) error {
+		return insertWilayahBatch("districts", items)
+	}); err != nil {
+		return err
+	}
+	return seedJSON(filepath.Join(dataPath, "kelurahan.json"), func(items []wilayah.Village) error {
+		return insertWilayahBatch("villages", items)
+	})
+}
+
+func wilayahAlreadySeeded() bool {
+	var count int64
+	if err := DB.Table("villages").Count(&count).Error; err != nil {
+		log.Printf("Wilayah seed check error: %v", err)
+		return false
+	}
+	return count > 0
+}
+
+func insertWilayahBatch[T any](table string, items []T) error {
+	if len(items) == 0 {
+		return nil
+	}
+	if err := DB.Table(table).Clauses(clause.Insert{Modifier: "IGNORE"}).CreateInBatches(items, 1000).Error; err != nil {
+		log.Printf("%s seed batch error: %v", table, err)
+		return err
+	}
+	log.Printf("Seeded %s: %d rows processed", table, len(items))
+	return nil
+}
+
+func seedJSON[T any](path string, insert func([]T) error) error {
+	file, err := os.Open(path)
+	if err != nil {
+		return fmt.Errorf("open %s: %w", path, err)
+	}
+	defer file.Close()
+	var items []T
+	if err := json.NewDecoder(file).Decode(&items); err != nil {
+		return fmt.Errorf("decode %s: %w", path, err)
+	}
+	return insert(items)
+}
+
+func wilayahDataPath() string {
+	if path := os.Getenv("WILAYAH_DATA_PATH"); path != "" {
+		return path
+	}
+	if _, err := os.Stat("data/provinsi.json"); err == nil {
+		return "data"
+	}
+	log.Println("Wilayah data path not found. Set WILAYAH_DATA_PATH to a folder containing provinsi.json, kota.json, kecamatan.json, and kelurahan.json")
+	return "data"
+}

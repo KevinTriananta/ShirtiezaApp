@@ -1,9 +1,8 @@
 package models
 
 import (
-	"time"
-
 	"gorm.io/gorm"
+	"time"
 )
 
 type Cart struct {
@@ -14,11 +13,9 @@ type Cart struct {
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `json:"deleted_at" gorm:"index"`
-
 	// Relations
 	Items []CartItem `json:"items,omitempty" gorm:"foreignKey:CartID"`
 }
-
 type CartItem struct {
 	ID        uint           `gorm:"primaryKey" json:"id"`
 	CartID    uint           `json:"cart_id" gorm:"not null"`
@@ -31,13 +28,11 @@ type CartItem struct {
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `json:"deleted_at" gorm:"index"`
 }
-
 type CartResponse struct {
 	ID    uint               `json:"id"`
 	Items []CartItemResponse `json:"items"`
 	Total float64            `json:"total"`
 }
-
 type CartItemResponse struct {
 	ID       uint             `json:"id"`
 	Product  *ProductResponse `json:"product"`

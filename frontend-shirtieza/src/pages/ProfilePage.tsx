@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { LogOut, User, Package, ChevronRight, AlertCircle, Check } from 'lucide-react';
+import { LogOut, User, Package, ChevronRight, AlertCircle, Check, Mail, MapPin, Phone } from 'lucide-react';
 import { useAuth } from '../providers/AuthContext';
 import { userService } from '../services/userService';
+import ConfirmDialog from '../components/ui/ConfirmDialog';
+import { useToast } from '../providers/ToastContext';
 import type { Order } from '../types';
 
 export default function ProfilePage() {
@@ -12,13 +14,17 @@ export default function ProfilePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
+  const { notify } = useToast();
   const [formData, setFormData] = useState({
     name: user?.name || '',
     phone: user?.phone || '',
     address: user?.address || '',
     city: user?.city || '',
     country: user?.country || '',
+    zip_code: (user as any)?.zip_code || '',
+    avatar: user?.avatar || '',
   });
 
   useEffect(() => {
@@ -33,6 +39,8 @@ export default function ProfilePage() {
       address: user?.address || '',
       city: user?.city || '',
       country: user?.country || '',
+      zip_code: (user as any)?.zip_code || '',
+      avatar: user?.avatar || '',
     });
   }, [user]);
 
@@ -48,7 +56,11 @@ export default function ProfilePage() {
     }
   };
 
-  const handleLogout = () => { logout(); navigate('/'); };
+  const handleLogout = () => {
+    logout();
+    notify('You have been logged out.', 'info');
+    navigate('/');
+  };
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,10 +71,12 @@ export default function ProfilePage() {
       const response = await userService.updateUserProfile(user.id, formData);
       updateUser({ ...user, ...response.data });
       setMessage({ type: 'success', text: 'Profile updated successfully!' });
+      notify('Profile updated successfully.', 'success');
       setIsEditing(false);
     } catch (error) {
       console.error('Failed to update profile:', error);
       setMessage({ type: 'error', text: 'Failed to update profile. Please try again.' });
+      notify('Failed to update profile.', 'error');
     } finally {
       setIsSaving(false);
     }
@@ -90,7 +104,7 @@ export default function ProfilePage() {
               <span className="text-neutral-600 font-medium">Profile</span>
             </div>
             <button
-              onClick={handleLogout}
+              onClick={() => setIsLogoutConfirmOpen(true)}
               className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.15em] text-neutral-400 hover:text-black px-3 py-1.5 rounded-lg hover:bg-neutral-100 transition-all duration-200"
             >
               <LogOut size={14} strokeWidth={1.5} /> Logout
@@ -114,21 +128,25 @@ export default function ProfilePage() {
           <div className="lg:col-span-1">
             <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-6 lg:p-8">
               <div className="text-center mb-6">
-                <div className="w-20 h-20 mx-auto bg-neutral-100 rounded-2xl flex items-center justify-center mb-4">
-                  <User size={32} className="text-neutral-400" strokeWidth={1.2} />
+                <div className="w-24 h-24 mx-auto bg-neutral-100 rounded-3xl flex items-center justify-center mb-4 overflow-hidden border border-neutral-100">
+                  {user.avatar ? <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" /> : <User size={34} className="text-neutral-400" strokeWidth={1.2} />}
                 </div>
                 <h2 className="text-lg font-bold text-black">{user.name}</h2>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-neutral-400 mt-1">{user.role}</p>
+                
               </div>
               <div className="space-y-4 pt-4 border-t border-neutral-100">
                 {[
-                  { label: 'Email', value: user.email },
-                  { label: 'Phone', value: user.phone },
-                  { label: 'City', value: user.city },
+                  { label: 'Email', value: user.email, icon: <Mail size={15} /> },
+                  { label: 'Phone', value: user.phone, icon: <Phone size={15} /> },
+                  { label: 'Location', value: [user.city, user.country].filter(Boolean).join(', '), icon: <MapPin size={15} /> },
+                
                 ].map((item) => item.value ? (
-                  <div key={item.label}>
+                  <div key={item.label} className="flex gap-3">
+                    <span className="mt-0.5 text-neutral-300">{item.icon}</span>
+                    <div>
                     <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-400 mb-1">{item.label}</p>
                     <p className="text-sm font-medium text-black">{item.value}</p>
+                    </div>
                   </div>
                 ) : null)}
               </div>
@@ -140,7 +158,7 @@ export default function ProfilePage() {
             {/* Edit Profile */}
             <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-6 lg:p-8">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-sm font-bold uppercase tracking-[0.1em]">Profile Information</h3>
+                <h3 className="text-sm font-bold uppercase tracking-[0.1em]">Account Information</h3>
                 <button
                   onClick={() => setIsEditing(!isEditing)}
                   className="text-[11px] font-semibold uppercase tracking-[0.15em] text-neutral-400 hover:text-black px-3 py-1.5 rounded-lg hover:bg-neutral-100 transition-all duration-200"
@@ -173,6 +191,16 @@ export default function ProfilePage() {
                       <input type="text" value={formData.country} onChange={(e) => setFormData({ ...formData, country: e.target.value })} className={inputClass} />
                     </div>
                   </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className={labelClass}>ZIP Code</label>
+                      <input type="text" value={formData.zip_code} onChange={(e) => setFormData({ ...formData, zip_code: e.target.value })} className={inputClass} />
+                    </div>
+                    <div>
+                      <label className={labelClass}>Avatar URL</label>
+                      <input type="text" value={formData.avatar} onChange={(e) => setFormData({ ...formData, avatar: e.target.value })} placeholder="https://..." className={inputClass} />
+                    </div>
+                  </div>
                   <button
                     type="submit"
                     disabled={isSaving}
@@ -190,6 +218,8 @@ export default function ProfilePage() {
                     { label: 'Address', value: user.address || 'Not provided' },
                     { label: 'City', value: user.city || 'Not provided' },
                     { label: 'Country', value: user.country || 'Not provided' },
+                    { label: 'ZIP Code', value: (user as any).zip_code || 'Not provided' },
+                    { label: 'Avatar URL', value: user.avatar || 'Not provided' },
                   ].map((item) => (
                     <div key={item.label}>
                       <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-400 mb-1.5">{item.label}</p>
@@ -248,6 +278,14 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+      <ConfirmDialog
+        isOpen={isLogoutConfirmOpen}
+        title="Logout from account?"
+        message="You will need to sign in again to access your cart, orders, and profile."
+        confirmLabel="Logout"
+        onCancel={() => setIsLogoutConfirmOpen(false)}
+        onConfirm={handleLogout}
+      />
     </div>
   );
 }

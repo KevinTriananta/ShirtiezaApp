@@ -49,7 +49,7 @@ GET /products?page=1&page_size=12&sort_by=newest
           "name": "Hoodie",
           "slug": "hoodie"
         },
-        "created_at": "2024-01-01T00:00:00Z"
+        "created_at": "2026-01-01T00:00:00Z"
       }
     ],
     "total": 50,
@@ -167,7 +167,7 @@ GET /categories
       "slug": "hoodie",
       "icon": "👕",
       "description": "Comfortable hoodies",
-      "created_at": "2024-01-01T00:00:00Z"
+      "created_at": "2026-01-01T00:00:00Z"
     }
   ],
   "code": 200
@@ -510,7 +510,7 @@ Content-Type: application/json
         "price": 180000
       }
     ],
-    "created_at": "2024-01-01T00:00:00Z"
+    "created_at": "2026-01-01T00:00:00Z"
   },
   "code": 201
 }

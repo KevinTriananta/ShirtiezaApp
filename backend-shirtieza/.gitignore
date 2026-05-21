@@ -10,3 +10,4 @@ server
 dist/
 build/
 uploads/
+data/*.json

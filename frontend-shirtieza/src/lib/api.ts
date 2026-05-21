@@ -10,26 +10,14 @@ const api: AxiosInstance = axios.create({
   },
 });
 
-// Add token and role to requests if they exist
+// Add token to requests if it exists. Authorization role must be derived server-side.
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('auth_token');
-  const userJson = localStorage.getItem('auth_user');
-  
+
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
-  
-  if (userJson) {
-    try {
-      const user = JSON.parse(userJson);
-      if (user.role) {
-        config.headers['X-User-Role'] = user.role;
-      }
-    } catch (e) {
-      console.error('Failed to parse user from local storage');
-    }
-  }
-  
+
   return config;
 });
 
@@ -40,7 +28,6 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem('auth_token');
       localStorage.removeItem('auth_user');
-      window.location.href = '/login';
     }
     return Promise.reject(error);
   }

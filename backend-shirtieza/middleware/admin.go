@@ -1,9 +1,8 @@
 package middleware
 
 import (
-	"net/http"
-
 	"backend-shirtieza/utils"
+	"net/http"
 )
 
 func AdminMiddleware(next http.Handler) http.Handler {
@@ -12,7 +11,6 @@ func AdminMiddleware(next http.Handler) http.Handler {
 			utils.RespondWithError(w, http.StatusForbidden, "Forbidden", "Admin access required")
 			return
 		}
-
 		next.ServeHTTP(w, r)
 	})
 }

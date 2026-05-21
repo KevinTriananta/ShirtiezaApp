@@ -1,0 +1,12 @@
+{
+  "private": true,
+  "scripts": {
+    "dev": "npm --prefix frontend-shirtieza run dev",
+    "build": "npm --prefix frontend-shirtieza run build",
+    "lint": "npm --prefix frontend-shirtieza run lint",
+    "preview": "npm --prefix frontend-shirtieza run preview",
+    "backend": "cd backend-shirtieza && go run cmd/main.go",
+    "backend:alt": "cd backend-shirtieza && PORT=18080 go run cmd/main.go",
+    "install:frontend": "npm --prefix frontend-shirtieza install"
+  }
+}

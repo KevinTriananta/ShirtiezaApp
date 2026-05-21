@@ -6,9 +6,7 @@ import (
 
 func SetupRoutes() *mux.Router {
 	router := mux.NewRouter()
-
 	// Setup v1 API routes
 	SetupV1Routes(router)
-
 	return router
 }

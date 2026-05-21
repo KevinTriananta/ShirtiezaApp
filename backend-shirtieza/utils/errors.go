@@ -11,7 +11,6 @@ type ErrorResponse struct {
 	Error   interface{} `json:"error,omitempty"`
 	Code    int         `json:"code"`
 }
-
 type SuccessResponse struct {
 	Message string      `json:"message"`
 	Data    interface{} `json:"data"`
@@ -21,28 +20,23 @@ type SuccessResponse struct {
 func RespondWithError(w http.ResponseWriter, code int, message string, err interface{}) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(code)
-
 	response := ErrorResponse{
 		Message: message,
 		Error:   err,
 		Code:    code,
 	}
-
 	if err := json.NewEncoder(w).Encode(response); err != nil {
 		log.Printf("Error encoding error response: %v", err)
 	}
 }
-
 func RespondWithSuccess(w http.ResponseWriter, code int, message string, data interface{}) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(code)
-
 	response := SuccessResponse{
 		Message: message,
 		Data:    data,
 		Code:    code,
 	}
-
 	if err := json.NewEncoder(w).Encode(response); err != nil {
 		log.Printf("Error encoding success response: %v", err)
 	}

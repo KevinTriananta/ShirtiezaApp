@@ -481,7 +481,7 @@ docker-compose up
 
 ---
 
-Dibuat: Januari 2024
-Last Updated: Januari 2024
+Dibuat: Januari 2026
+Last Updated: Januari 2026
 
 Untuk pertanyaan atau bantuan, lihat dokumentasi yang tersedia atau buat issue di repository.

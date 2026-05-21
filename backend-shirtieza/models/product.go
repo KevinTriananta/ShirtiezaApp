@@ -1,9 +1,8 @@
 package models
 
 import (
-	"time"
-
 	"gorm.io/gorm"
+	"time"
 )
 
 type Product struct {
@@ -20,22 +19,18 @@ type Product struct {
 	Rating        float64  `json:"rating" gorm:"default:0"`
 	ReviewCount   int      `json:"review_count" gorm:"default:0"`
 	IsFeatured    bool     `json:"is_featured" gorm:"default:false"`
-
 	// Foreign Keys
-	CategoryID uint      `json:"category_id"`
-	Category   *Category `json:"category,omitempty" gorm:"foreignKey:CategoryID"`
-
-	CreatedAt time.Time      `json:"created_at"`
-	UpdatedAt time.Time      `json:"updated_at"`
-	DeletedAt gorm.DeletedAt `json:"deleted_at" gorm:"index"`
-
+	CategoryID uint           `json:"category_id"`
+	Category   *Category      `json:"category,omitempty" gorm:"foreignKey:CategoryID"`
+	CreatedAt  time.Time      `json:"created_at"`
+	UpdatedAt  time.Time      `json:"updated_at"`
+	DeletedAt  gorm.DeletedAt `json:"deleted_at" gorm:"index"`
 	// Relations
 	Collections []Collection    `json:"collections,omitempty" gorm:"many2many:collection_products;"`
 	Reviews     []ProductReview `json:"reviews,omitempty" gorm:"foreignKey:ProductID"`
 	CartItems   []CartItem      `json:"cart_items,omitempty" gorm:"foreignKey:ProductID"`
 	OrderItems  []OrderItem     `json:"order_items,omitempty" gorm:"foreignKey:ProductID"`
 }
-
 type ProductResponse struct {
 	ID            uint         `json:"id"`
 	Name          string       `json:"name"`

@@ -1,25 +1,17 @@
-import { X, Upload, Check, Loader2, ImagePlus } from 'lucide-react';
-import type { Product, Category } from '../../../types';
+import { X, Check, Loader2 } from 'lucide-react';
+import type { Product, Category, Collection } from '../../../types';
+import type { ProductFormData, UpdateProductForm } from './productFormTypes';
+import { ProductCollectionFields, ProductIdentityFields, ProductImageFields, ProductPricingFields } from './ProductModalSections';
 
 interface ProductModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (e: React.FormEvent) => Promise<void>;
-  formData: {
-    name: string;
-    slug: string;
-    description: string;
-    price: number;
-    stock: number;
-    image: string;
-    images: string;
-    colors: string;
-    category_id: number;
-    is_featured: boolean;
-  };
-  setFormData: (data: any) => void;
+  formData: ProductFormData;
+  setFormData: UpdateProductForm;
   selectedProduct: Product | null;
   categories: Category[];
+  collections: Collection[];
   isSaving: boolean;
 }
 
@@ -31,39 +23,10 @@ export default function ProductModal({
   setFormData,
   selectedProduct,
   categories,
+  collections,
   isSaving
 }: ProductModalProps) {
   if (!isOpen) return null;
-
-  const useSampleImage = () => {
-    setFormData({
-      ...formData,
-      image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=900&auto=format&fit=crop',
-    });
-  };
-
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    if (!file.type.startsWith('image/')) {
-      alert('Please upload an image file such as PNG, JPG, JPEG, or WEBP.');
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === 'string') {
-        if (!formData.image) {
-          setFormData({ ...formData, image: reader.result });
-        } else {
-          setFormData({
-            ...formData,
-            images: [formData.images, reader.result].filter(Boolean).join('\n'),
-          });
-        }
-      }
-    };
-    reader.readAsDataURL(file);
-  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -89,127 +52,10 @@ export default function ProductModal({
         </div>
 
         <form onSubmit={onSave} className="p-8 grid grid-cols-2 gap-6 max-h-[70vh] overflow-y-auto custom-scrollbar">
-          <div className="col-span-2">
-            <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400 mb-2.5 block">Product Identity</label>
-            <input
-              type="text"
-              required
-              placeholder="e.g. Signature Oversized Hoodie"
-              className="w-full px-5 py-4 bg-neutral-50 border border-neutral-200 rounded-2xl outline-none focus:ring-4 focus:ring-black/5 focus:border-black/20 transition-all font-medium"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            />
-          </div>
-
-          <div className="col-span-2">
-            <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400 mb-2.5 block">Description</label>
-            <textarea
-              rows={3}
-              placeholder="Describe the aesthetic and material..."
-              className="w-full px-5 py-4 bg-neutral-50 border border-neutral-200 rounded-2xl outline-none focus:ring-4 focus:ring-black/5 focus:border-black/20 transition-all font-medium resize-none"
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            />
-          </div>
-
-          <div>
-            <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400 mb-2.5 block">Price (IDR)</label>
-            <input
-              type="number"
-              required
-              className="w-full px-5 py-4 bg-neutral-50 border border-neutral-200 rounded-2xl outline-none focus:ring-4 focus:ring-black/5 focus:border-black/20 transition-all font-bold"
-              value={formData.price}
-              onChange={(e) => setFormData({ ...formData, price: parseInt(e.target.value) })}
-            />
-          </div>
-
-          <div>
-            <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400 mb-2.5 block">Inventory Stock</label>
-            <input
-              type="number"
-              required
-              className="w-full px-5 py-4 bg-neutral-50 border border-neutral-200 rounded-2xl outline-none focus:ring-4 focus:ring-black/5 focus:border-black/20 transition-all font-bold"
-              value={formData.stock}
-              onChange={(e) => setFormData({ ...formData, stock: parseInt(e.target.value) })}
-            />
-          </div>
-
-          <div>
-            <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400 mb-2.5 block">Category</label>
-            <select
-              className="w-full px-5 py-4 bg-neutral-50 border border-neutral-200 rounded-2xl outline-none focus:ring-4 focus:ring-black/5 focus:border-black/20 transition-all font-bold appearance-none cursor-pointer"
-              value={formData.category_id}
-              onChange={(e) => setFormData({ ...formData, category_id: parseInt(e.target.value) })}
-            >
-              {categories.map(cat => (
-                <option key={cat.id} value={cat.id}>{cat.name}</option>
-              ))}
-            </select>
-          </div>
-
-          <div className="flex items-center pt-8">
-            <label className="flex items-center gap-3 cursor-pointer group">
-              <div className={`w-12 h-6 rounded-full transition-all relative ${formData.is_featured ? 'bg-black' : 'bg-neutral-200'}`}>
-                <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${formData.is_featured ? 'left-7' : 'left-1'}`} />
-              </div>
-              <input
-                type="checkbox"
-                className="hidden"
-                checked={formData.is_featured}
-                onChange={(e) => setFormData({ ...formData, is_featured: e.target.checked })}
-              />
-              <span className="text-[10px] font-black uppercase tracking-widest text-neutral-500 group-hover:text-black transition-colors">Featured Item</span>
-            </label>
-          </div>
-
-          <div className="col-span-2">
-            <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400 mb-2.5 block">Imagery URL</label>
-            {formData.image && (
-              <div className="mb-4 w-32 h-40 rounded-2xl bg-neutral-100 overflow-hidden border border-neutral-200">
-                <img src={formData.image} alt="Product preview" className="w-full h-full object-cover" />
-              </div>
-            )}
-            <div className="flex gap-4">
-              <input
-                type="text"
-                placeholder="Paste image URL or upload PNG/JPG/WEBP"
-                className="flex-grow px-5 py-4 bg-neutral-50 border border-neutral-200 rounded-2xl outline-none focus:ring-4 focus:ring-black/5 focus:border-black/20 transition-all font-medium"
-                value={formData.image}
-                onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-              />
-              <label className="p-4 bg-neutral-100 text-neutral-500 rounded-2xl hover:bg-black hover:text-white transition-all cursor-pointer" title="Upload image file">
-                <ImagePlus size={20} />
-                <input type="file" accept="image/png,image/jpeg,image/jpg,image/webp,image/gif" onChange={handleFileUpload} className="hidden" />
-              </label>
-              <button type="button" onClick={useSampleImage} title="Use sample product image" className="p-4 bg-neutral-100 text-neutral-500 rounded-2xl hover:bg-black hover:text-white transition-all">
-                <Upload size={20} />
-              </button>
-            </div>
-          </div>
-
-          <div className="col-span-2">
-            <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400 mb-2.5 block">Additional Images</label>
-            <textarea
-              rows={3}
-              placeholder="One image URL per line. Uploaded images can be pasted here too."
-              className="w-full px-5 py-4 bg-neutral-50 border border-neutral-200 rounded-2xl outline-none focus:ring-4 focus:ring-black/5 focus:border-black/20 transition-all font-medium resize-none"
-              value={formData.images}
-              onChange={(e) => setFormData({ ...formData, images: e.target.value })}
-            />
-            <p className="text-[11px] text-neutral-400 mt-2">Main image plus these images will become the product gallery.</p>
-          </div>
-
-          <div className="col-span-2">
-            <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400 mb-2.5 block">Available Colors</label>
-            <input
-              type="text"
-              placeholder="Black, White, Navy, Stone"
-              className="w-full px-5 py-4 bg-neutral-50 border border-neutral-200 rounded-2xl outline-none focus:ring-4 focus:ring-black/5 focus:border-black/20 transition-all font-medium"
-              value={formData.colors}
-              onChange={(e) => setFormData({ ...formData, colors: e.target.value })}
-            />
-            <p className="text-[11px] text-neutral-400 mt-2">Pisahkan warna dengan koma. Contoh: Black, White, Navy.</p>
-          </div>
+          <ProductIdentityFields formData={formData} setFormData={setFormData} />
+          <ProductPricingFields formData={formData} setFormData={setFormData} />
+          <ProductCollectionFields formData={formData} setFormData={setFormData} categories={categories} collections={collections} />
+          <ProductImageFields formData={formData} setFormData={setFormData} />
 
           <div className="col-span-2 flex justify-end gap-4 mt-8 pt-6 border-t border-neutral-100">
             <button
