@@ -26,7 +26,7 @@ export default function AdminSettingsPage() {
     <form onSubmit={saveSettings} className="space-y-6 max-w-3xl">
       <div className="bg-white border border-neutral-200 rounded-2xl p-8">
         <h2 className="text-xl font-black uppercase tracking-tight mb-2">Store Settings</h2>
-        <p className="text-sm text-neutral-400 mb-8">Pengaturan demo ini tersimpan lokal untuk kebutuhan presentasi.</p>
+        <p className="text-sm text-neutral-400 mb-8">Pengaturan ini tersimpan lokal di browser admin.</p>
         <div className="grid md:grid-cols-2 gap-5">
           {[
             ['storeName', 'Store Name'],

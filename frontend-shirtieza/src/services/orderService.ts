@@ -3,6 +3,8 @@ import api from '../lib/api';
 interface OrderItem {
   product_id: number;
   quantity: number;
+  size?: string;
+  color?: string;
 }
 
 interface CreateOrderData {
@@ -14,6 +16,8 @@ interface CreateOrderData {
   shipping_cost: number;
   tax: number;
   payment_method: string;
+  user_voucher_id?: number;
+  cart_item_ids?: number[];
   items: OrderItem[];
 }
 
@@ -59,6 +63,15 @@ export const orderService = {
 
   cancelOrder: async (id: number) => {
     const response = await api.put<OrderResponse>(`/admin/orders/${id}/cancel`);
+    return response.data;
+  },
+
+  uploadPaymentProof: async (id: number, file: File) => {
+    const formData = new FormData();
+    formData.append('payment_proof', file);
+    const response = await api.post<OrderResponse>(`/orders/${id}/payment-proof`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
     return response.data;
   },
 

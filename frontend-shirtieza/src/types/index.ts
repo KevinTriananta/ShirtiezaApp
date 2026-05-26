@@ -25,6 +25,7 @@ export interface Collection {
   image?: string;
   description?: string;
   is_active?: boolean;
+  products?: Product[];
 }
 
 export interface Category {
@@ -54,6 +55,7 @@ export interface User {
   address?: string;
   city?: string;
   country?: string;
+  zip_code?: string;
   avatar?: string;
   role: string;
 }
@@ -61,8 +63,39 @@ export interface User {
 export interface CartItem {
   id: number;
   product: Product;
+  size?: string;
+  color?: string;
   quantity: number;
   price: number;
+}
+
+export interface Voucher {
+  id: number;
+  code: string;
+  name: string;
+  description?: string;
+  discount_percentage: number;
+  max_discount?: number;
+  min_purchase?: number;
+  category_id?: number;
+  category?: Category;
+  expires_at: string;
+  is_active: boolean;
+}
+
+export interface UserVoucher {
+  id: number;
+  user_id: number;
+  voucher_id: number;
+  voucher?: Voucher;
+  used_at?: string | null;
+}
+
+export interface WishlistItem {
+  id: number;
+  user_id: number;
+  product_id: number;
+  product?: Product;
 }
 
 export interface Cart {
@@ -77,6 +110,8 @@ export interface OrderItem {
   order_id: number;
   product_id: number;
   product?: Product;
+  size?: string;
+  color?: string;
   quantity: number;
   price: number;
 }
@@ -90,12 +125,15 @@ export interface Order {
   shipping_country: string;
   shipping_zip: string;
   subtotal: number;
+  discount?: number;
+  voucher_id?: number;
   shipping_cost: number;
   tax: number;
   total: number;
   status: string;
   payment_status: string;
   payment_method: string;
+  payment_proof?: string;
   notes?: string;
   items: OrderItem[];
   created_at: string;

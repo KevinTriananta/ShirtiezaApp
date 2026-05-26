@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { AlertCircle, Check, Heart, Minus, Plus, ShoppingCart } from 'lucide-react';
+import { AlertCircle, Heart, Minus, Plus, ShoppingCart } from 'lucide-react';
 import type { Product } from '../../types';
 import { useAuth } from '../../providers/AuthContext';
-import { useCart } from '../../providers/CartContext';
+import { wishlistService } from '../../services/wishlistService';
 
 interface ProductPurchasePanelProps {
   product: Product;
@@ -13,11 +13,8 @@ interface ProductPurchasePanelProps {
 
 export default function ProductPurchasePanel({ product, error, onError }: ProductPurchasePanelProps) {
   const navigate = useNavigate();
-  const { addToCart } = useCart();
   const { isAuthenticated } = useAuth();
   const [quantity, setQuantity] = useState(1);
-  const [isAdding, setIsAdding] = useState(false);
-  const [addedSuccess, setAddedSuccess] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [selectedSize, setSelectedSize] = useState('M');
   const [selectedColor, setSelectedColor] = useState(product.colors?.[0] || 'Black');
@@ -27,31 +24,39 @@ export default function ProductPurchasePanel({ product, error, onError }: Produc
     setQuantity(1);
   }, [product]);
 
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setIsFavorite(false);
+      return;
+    }
+    wishlistService.getWishlist()
+      .then((response) => setIsFavorite((response.data || []).some((item) => item.product_id === product.id)))
+      .catch(() => setIsFavorite(false));
+  }, [isAuthenticated, product.id]);
+
   const discount = product.discount_price
     ? Math.round(((product.price - product.discount_price) / product.price) * 100)
     : 0;
 
-  const handleAddToCart = async () => {
+  // Checkout Now handler
+  const handleCheckoutNow = () => {
     if (!isAuthenticated) {
       navigate('/login');
       return;
     }
     if (!selectedSize) {
-      onError('Please select a size before adding to cart.');
+      onError('Please select a size before checkout.');
       return;
     }
-    setIsAdding(true);
-    onError('');
-    try {
-      await addToCart(product.id, quantity);
-      setAddedSuccess(true);
-      setTimeout(() => setAddedSuccess(false), 2500);
-    } catch (err) {
-      console.error('Failed to add to cart:', err);
-      onError('Failed to add to cart. Please try again.');
-    } finally {
-      setIsAdding(false);
-    }
+    // Redirect ke halaman checkout now dengan data produk
+    navigate(`/checkout-now/${product.id}`, {
+      state: {
+        product,
+        quantity,
+        size: selectedSize,
+        color: selectedColor,
+      },
+    });
   };
 
   return (
@@ -136,15 +141,31 @@ export default function ProductPurchasePanel({ product, error, onError }: Produc
         </div>
       </div>
 
-      {addedSuccess && <div className="bg-emerald-50 border border-emerald-100 text-sm text-emerald-700 px-4 py-3 rounded-xl flex items-center gap-3 mb-4 animate-scale-in"><Check size={18} /><span>Added to cart successfully!</span></div>}
       {error && <div className="bg-red-50 border border-red-100 text-sm text-red-600 px-4 py-3 rounded-xl flex items-center gap-3 mb-4 animate-scale-in"><AlertCircle size={18} /><span>{error}</span></div>}
 
       <div className="flex gap-3 mb-8">
-        <button onClick={handleAddToCart} disabled={product.stock === 0 || isAdding} className={`flex-1 py-4 text-[11px] font-bold uppercase tracking-[0.2em] rounded-xl transition-all duration-300 flex items-center justify-center gap-2.5 ${product.stock === 0 ? 'bg-neutral-200 text-neutral-400 cursor-not-allowed' : 'bg-black text-white hover:bg-neutral-800 hover:shadow-lg hover:shadow-black/10 active:scale-[0.98]'}`}>
-          {isAdding ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <ShoppingCart size={16} strokeWidth={1.5} />}
-          {isAdding ? 'Adding...' : 'Add to Cart'}
+        <button
+          onClick={handleCheckoutNow}
+          disabled={product.stock === 0}
+          className={`flex-1 py-4 text-[11px] font-bold uppercase tracking-[0.2em] rounded-xl transition-all duration-300 flex items-center justify-center gap-2.5 ${product.stock === 0 ? 'bg-neutral-200 text-neutral-400 cursor-not-allowed' : 'bg-black text-white hover:bg-neutral-800 hover:shadow-lg hover:shadow-black/10 active:scale-[0.98]'}`}
+        >
+          <ShoppingCart size={16} strokeWidth={1.5} />
+          Checkout Now
         </button>
-        <button onClick={() => setIsFavorite(!isFavorite)} className={`w-14 rounded-xl transition-all duration-300 flex items-center justify-center ${isFavorite ? 'bg-black text-white' : 'border border-neutral-200 text-neutral-400 hover:border-black hover:text-black'}`}>
+        <button onClick={async () => {
+          if (!isAuthenticated) return navigate('/login');
+          try {
+            if (isFavorite) {
+              await wishlistService.removeWishlistItem(product.id);
+              setIsFavorite(false);
+            } else {
+              await wishlistService.addWishlistItem(product.id);
+              setIsFavorite(true);
+            }
+          } catch (error) {
+            onError('Failed to update wishlist. Please try again.');
+          }
+        }} className={`w-14 rounded-xl transition-all duration-300 flex items-center justify-center ${isFavorite ? 'bg-black text-white' : 'border border-neutral-200 text-neutral-400 hover:border-black hover:text-black'}`}>
           <Heart size={18} strokeWidth={1.5} fill={isFavorite ? 'currentColor' : 'none'} />
         </button>
       </div>

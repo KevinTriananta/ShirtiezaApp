@@ -45,37 +45,43 @@ func migrateWilayah(db *sql.DB) error {
 }
 
 func seedWilayah(db *sql.DB, dataPath string) error {
-	if wilayahAlreadySeeded() {
-		log.Println("Wilayah seed skipped: data already exists")
-		return nil
-	}
-	if err := seedJSON(filepath.Join(dataPath, "provinsi.json"), func(items []wilayah.Province) error {
+	if err := seedWilayahTable("provinces", filepath.Join(dataPath, "provinsi.json"), func(items []wilayah.Province) error {
 		return insertWilayahBatch("provinces", items)
 	}); err != nil {
 		return err
 	}
-	if err := seedJSON(filepath.Join(dataPath, "kota.json"), func(items []wilayah.City) error {
+	if err := seedWilayahTable("cities", filepath.Join(dataPath, "kota.json"), func(items []wilayah.City) error {
 		return insertWilayahBatch("cities", items)
 	}); err != nil {
 		return err
 	}
-	if err := seedJSON(filepath.Join(dataPath, "kecamatan.json"), func(items []wilayah.District) error {
+	if err := seedWilayahTable("districts", filepath.Join(dataPath, "kecamatan.json"), func(items []wilayah.District) error {
 		return insertWilayahBatch("districts", items)
 	}); err != nil {
 		return err
 	}
-	return seedJSON(filepath.Join(dataPath, "kelurahan.json"), func(items []wilayah.Village) error {
+	return seedWilayahTable("villages", filepath.Join(dataPath, "kelurahan.json"), func(items []wilayah.Village) error {
 		return insertWilayahBatch("villages", items)
 	})
 }
 
-func wilayahAlreadySeeded() bool {
+func seedWilayahTable[T any](table string, path string, insert func([]T) error) error {
 	var count int64
-	if err := DB.Table("villages").Count(&count).Error; err != nil {
-		log.Printf("Wilayah seed check error: %v", err)
-		return false
+	if err := DB.Table(table).Count(&count).Error; err != nil {
+		log.Printf("%s seed check error: %v", table, err)
+		return err
 	}
-	return count > 0
+
+	items, err := readSeedJSON[T](path)
+	if err != nil {
+		return err
+	}
+	if count >= int64(len(items)) {
+		log.Printf("%s seed skipped: %d/%d rows already exist", table, count, len(items))
+		return nil
+	}
+	log.Printf("%s seed continuing: %d/%d rows exist", table, count, len(items))
+	return insert(items)
 }
 
 func insertWilayahBatch[T any](table string, items []T) error {
@@ -90,17 +96,17 @@ func insertWilayahBatch[T any](table string, items []T) error {
 	return nil
 }
 
-func seedJSON[T any](path string, insert func([]T) error) error {
+func readSeedJSON[T any](path string) ([]T, error) {
 	file, err := os.Open(path)
 	if err != nil {
-		return fmt.Errorf("open %s: %w", path, err)
+		return nil, fmt.Errorf("open %s: %w", path, err)
 	}
 	defer file.Close()
 	var items []T
 	if err := json.NewDecoder(file).Decode(&items); err != nil {
-		return fmt.Errorf("decode %s: %w", path, err)
+		return nil, fmt.Errorf("decode %s: %w", path, err)
 	}
-	return insert(items)
+	return items, nil
 }
 
 func wilayahDataPath() string {

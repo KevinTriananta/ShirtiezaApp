@@ -16,14 +16,18 @@ type Order struct {
 	ShippingCountry string `json:"shipping_country" gorm:"not null"`
 	ShippingZip     string `json:"shipping_zip" gorm:"not null"`
 	// Order Info
-	Subtotal     float64 `json:"subtotal" gorm:"not null"`
-	ShippingCost float64 `json:"shipping_cost" gorm:"default:0"`
-	Tax          float64 `json:"tax" gorm:"default:0"`
-	Total        float64 `json:"total" gorm:"not null"`
+	Subtotal     float64  `json:"subtotal" gorm:"not null"`
+	Discount     float64  `json:"discount" gorm:"default:0"`
+	VoucherID    *uint    `json:"voucher_id"`
+	Voucher      *Voucher `json:"voucher,omitempty" gorm:"foreignKey:VoucherID"`
+	ShippingCost float64  `json:"shipping_cost" gorm:"default:0"`
+	Tax          float64  `json:"tax" gorm:"default:0"`
+	Total        float64  `json:"total" gorm:"not null"`
 	// Status: pending, processing, shipped, delivered, cancelled
 	Status        string         `json:"status" gorm:"default:'pending'"`
-	PaymentStatus string         `json:"payment_status" gorm:"default:'unpaid'"` // paid, unpaid, refunded
+	PaymentStatus string         `json:"payment_status" gorm:"default:'unpaid'"` // unpaid, waiting_confirmation, paid, rejected, refunded
 	PaymentMethod string         `json:"payment_method"`
+	PaymentProof  string         `json:"payment_proof"`
 	Notes         string         `json:"notes" gorm:"type:text"`
 	CreatedAt     time.Time      `json:"created_at"`
 	UpdatedAt     time.Time      `json:"updated_at"`
@@ -37,6 +41,8 @@ type OrderItem struct {
 	Order     *Order         `json:"order,omitempty" gorm:"foreignKey:OrderID"`
 	ProductID uint           `json:"product_id" gorm:"not null"`
 	Product   *Product       `json:"product,omitempty" gorm:"foreignKey:ProductID"`
+	Size      string         `json:"size"`
+	Color     string         `json:"color"`
 	Quantity  int            `json:"quantity" gorm:"not null"`
 	Price     float64        `json:"price" gorm:"not null"` // Price at time of purchase
 	CreatedAt time.Time      `json:"created_at"`
@@ -49,6 +55,7 @@ type OrderResponse struct {
 	Status        string              `json:"status"`
 	PaymentStatus string              `json:"payment_status"`
 	Subtotal      float64             `json:"subtotal"`
+	Discount      float64             `json:"discount"`
 	ShippingCost  float64             `json:"shipping_cost"`
 	Tax           float64             `json:"tax"`
 	Total         float64             `json:"total"`
@@ -57,6 +64,8 @@ type OrderResponse struct {
 }
 type OrderItemResponse struct {
 	Product  *ProductResponse `json:"product"`
+	Size     string           `json:"size"`
+	Color    string           `json:"color"`
 	Quantity int              `json:"quantity"`
 	Price    float64          `json:"price"`
 }

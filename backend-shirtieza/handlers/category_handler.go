@@ -5,8 +5,11 @@ import (
 	"backend-shirtieza/models"
 	"backend-shirtieza/utils"
 	"encoding/json"
+	"fmt"
 	"github.com/gorilla/mux"
 	"net/http"
+	"regexp"
+	"strings"
 )
 
 // GetAllCategories - Mendapatkan semua kategori
@@ -57,10 +60,17 @@ func CreateCategory(w http.ResponseWriter, r *http.Request) {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid request payload", err.Error())
 		return
 	}
+	category.Name = strings.TrimSpace(category.Name)
+	if category.Name == "" {
+		utils.RespondWithError(w, http.StatusBadRequest, "Category name is required", nil)
+		return
+	}
+	category.Slug = uniqueCategorySlug(category.Name, category.Slug, category.CollectionID, 0)
 	if err := config.DB.Create(&category).Error; err != nil {
 		utils.RespondWithError(w, http.StatusInternalServerError, "Failed to create category", err.Error())
 		return
 	}
+	config.DB.Preload("Collection").First(&category, category.ID)
 	utils.RespondWithSuccess(w, http.StatusCreated, "Category created successfully", category)
 }
 
@@ -77,6 +87,10 @@ func UpdateCategory(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewDecoder(r.Body).Decode(&updateData); err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid request payload", err.Error())
 		return
+	}
+	updateData.Name = strings.TrimSpace(updateData.Name)
+	if updateData.Name != "" {
+		updateData.Slug = uniqueCategorySlug(updateData.Name, updateData.Slug, updateData.CollectionID, category.ID)
 	}
 	if err := config.DB.Model(&category).Updates(updateData).Error; err != nil {
 		utils.RespondWithError(w, http.StatusInternalServerError, "Failed to update category", err.Error())
@@ -112,4 +126,48 @@ func GetCategoryStats(w http.ResponseWriter, r *http.Request) {
 		"product_count": productCount,
 	}
 	utils.RespondWithSuccess(w, http.StatusOK, "Category stats fetched successfully", stats)
+}
+
+func uniqueCategorySlug(name string, requestedSlug string, collectionID *uint, currentID uint) string {
+	base := slugify(requestedSlug)
+	if base == "" {
+		base = slugify(name)
+	}
+	if collectionID != nil && *collectionID != 0 {
+		var collection models.Collection
+		if err := config.DB.First(&collection, *collectionID).Error; err == nil {
+			collectionSlug := slugify(collection.Slug)
+			if collectionSlug == "" {
+				collectionSlug = slugify(collection.Name)
+			}
+			if collectionSlug != "" && !strings.HasPrefix(base, collectionSlug+"-") {
+				base = collectionSlug + "-" + base
+			}
+		}
+	}
+	if base == "" {
+		base = "category"
+	}
+
+	slug := base
+	for i := 2; categorySlugExists(slug, currentID); i++ {
+		slug = fmt.Sprintf("%s-%d", base, i)
+	}
+	return slug
+}
+
+func categorySlugExists(slug string, currentID uint) bool {
+	var count int64
+	query := config.DB.Model(&models.Category{}).Where("slug = ?", slug)
+	if currentID != 0 {
+		query = query.Where("id <> ?", currentID)
+	}
+	query.Count(&count)
+	return count > 0
+}
+
+func slugify(value string) string {
+	slug := strings.ToLower(strings.TrimSpace(value))
+	slug = regexp.MustCompile(`[^a-z0-9]+`).ReplaceAllString(slug, "-")
+	return strings.Trim(slug, "-")
 }

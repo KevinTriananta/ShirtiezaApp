@@ -45,9 +45,6 @@ export default function LoginPage() {
       <div className="w-full max-w-md py-12 animate-fade-in-up">
         {/* Header */}
         <div className="text-center mb-10">
-          <Link to="/" className="text-[22px] font-black italic tracking-tight text-black mb-6 inline-block hover:opacity-70 transition-opacity duration-200">
-            SHIRTIEZA
-          </Link>
           <h1 className="text-xl font-bold uppercase tracking-[0.06em] text-black mt-6 mb-2">
             Welcome Back
           </h1>

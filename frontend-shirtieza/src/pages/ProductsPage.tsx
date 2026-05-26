@@ -14,7 +14,7 @@ export default function ProductsPage() {
     <div className="min-h-screen bg-white pt-16 lg:pt-[72px]">
       {/* Breadcrumb */}
       <div className="border-b border-neutral-100">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 py-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center gap-2 text-[11px] tracking-wide">
             <Link to="/" className="text-neutral-400 hover:text-black transition-colors duration-200">Home</Link>
             <span className="text-neutral-300">/</span>
@@ -25,18 +25,18 @@ export default function ProductsPage() {
 
       {/* Title + Controls */}
       <div className="border-b border-neutral-100">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 py-8 lg:py-12">
-          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-7 sm:py-8 lg:py-12">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.4em] text-neutral-400 mb-2">Shop</p>
-              <h1 className="text-3xl lg:text-4xl font-black uppercase tracking-tight text-black">
+              <p className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.35em] sm:tracking-[0.4em] text-neutral-400 mb-2">Shop</p>
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black uppercase tracking-tight text-black">
                 All Products
               </h1>
             </div>
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className="lg:hidden flex items-center gap-2 border border-neutral-200 px-4 py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-[0.15em] text-neutral-600 hover:border-black hover:text-black transition-all duration-200"
+                className="lg:hidden flex items-center gap-2 border border-neutral-200 px-4 py-2.5 text-[10px] font-bold uppercase tracking-[0.15em] text-neutral-600 hover:border-black hover:text-black transition-all duration-200"
               >
                 <SlidersHorizontal size={14} />
                 Filters
@@ -44,7 +44,7 @@ export default function ProductsPage() {
               <select
                 value={listing.sortBy}
                 onChange={(e) => listing.setSortBy(e.target.value)}
-                className="border border-neutral-200 px-4 py-2.5 rounded-xl text-[11px] font-semibold uppercase tracking-[0.1em] text-neutral-600 bg-white focus:outline-none focus:border-black transition-all duration-200 appearance-none cursor-pointer pr-8"
+                className="border border-neutral-200 px-4 py-2.5 text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.1em] text-neutral-600 bg-white focus:outline-none focus:border-black transition-all duration-200 appearance-none cursor-pointer pr-8"
               >
                 <option value="newest">Newest</option>
                 <option value="price_asc">Price: Low to High</option>
@@ -56,7 +56,7 @@ export default function ProductsPage() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-8 lg:py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
         <div className="flex gap-8 lg:gap-12">
           {/* Sidebar - Desktop */}
           <div className="hidden lg:block w-56 flex-shrink-0">
@@ -72,14 +72,14 @@ export default function ProductsPage() {
 
           {/* Mobile Filters */}
           {showFilters && (
-            <div className="lg:hidden fixed inset-0 z-50 bg-white animate-slide-down overflow-y-auto">
-              <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-100">
+            <div className="lg:hidden fixed inset-0 z-50 bg-white animate-fade-in overflow-y-auto">
+              <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-neutral-100">
                 <h3 className="text-sm font-bold uppercase tracking-[0.15em]">Filters</h3>
                 <button onClick={() => setShowFilters(false)} className="p-2 rounded-xl hover:bg-neutral-100 transition-colors">
                   <X size={20} />
                 </button>
               </div>
-              <div className="px-6 py-4 space-y-1">
+              <div className="px-4 sm:px-6 py-4 space-y-1">
                 <ProductFilters categories={listing.categories} selectedCategory={listing.selectedCategory} onCategoryChange={listing.setCategory} onClose={() => setShowFilters(false)} className="space-y-1 text-sm" />
               </div>
             </div>

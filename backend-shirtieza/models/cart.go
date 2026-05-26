@@ -22,6 +22,8 @@ type CartItem struct {
 	Cart      *Cart          `json:"cart,omitempty" gorm:"foreignKey:CartID"`
 	ProductID uint           `json:"product_id" gorm:"not null"`
 	Product   *Product       `json:"product,omitempty" gorm:"foreignKey:ProductID"`
+	Size      string         `json:"size"`
+	Color     string         `json:"color"`
 	Quantity  int            `json:"quantity" gorm:"not null"`
 	Price     float64        `json:"price" gorm:"not null"` // Price at time of adding to cart
 	CreatedAt time.Time      `json:"created_at"`
@@ -36,6 +38,8 @@ type CartResponse struct {
 type CartItemResponse struct {
 	ID       uint             `json:"id"`
 	Product  *ProductResponse `json:"product"`
+	Size     string           `json:"size"`
+	Color    string           `json:"color"`
 	Quantity int              `json:"quantity"`
 	Price    float64          `json:"price"`
 }

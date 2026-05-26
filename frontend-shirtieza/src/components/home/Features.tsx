@@ -20,12 +20,12 @@ export default function Features() {
   ];
 
   return (
-    <section className="py-16 border-y border-neutral-100">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-16">
+    <section className="py-12 sm:py-16 border-y border-neutral-100">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3 md:gap-10 lg:gap-16">
           {features.map((feature, idx) => (
-            <div key={idx} className="flex gap-6 items-start">
-              <div className="w-14 h-14 rounded-2xl bg-black text-white flex items-center justify-center flex-shrink-0 shadow-xl shadow-black/10">
+            <div key={idx} className="flex gap-4 sm:gap-6 items-start">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-black text-white flex items-center justify-center flex-shrink-0 shadow-xl shadow-black/10">
                 {feature.icon}
               </div>
               <div>

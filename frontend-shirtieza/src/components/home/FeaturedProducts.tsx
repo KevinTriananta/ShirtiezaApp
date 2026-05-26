@@ -10,16 +10,16 @@ interface FeaturedProductsProps {
 
 export default function FeaturedProducts({ title = "Top Picks", products, isLoading }: FeaturedProductsProps) {
   return (
-    <section className="py-16 sm:py-24 lg:py-32 bg-neutral-50/50">
+    <section className="py-12 sm:py-20 lg:py-24 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between mb-10 sm:mb-16 animate-fade-in-up">
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black uppercase tracking-tighter text-black">
+        <div className="flex items-end justify-between gap-4 mb-8 sm:mb-12 animate-fade-in-up">
+          <h2 className="text-2xl sm:text-4xl lg:text-5xl font-black uppercase tracking-tighter text-black">
             {title}
           </h2>
           <div className="h-[1px] flex-grow mx-8 bg-neutral-200 hidden md:block" />
           <Link
             to="/products"
-            className="w-fit border border-neutral-200 px-6 py-3 rounded-xl text-[11px] font-bold uppercase tracking-widest hover:-translate-y-0.5 hover:border-black hover:bg-white hover:shadow-lg hover:shadow-black/5 transition-all duration-300"
+            className="w-fit border border-neutral-200 px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl text-[10px] sm:text-[11px] font-bold uppercase tracking-widest hover:-translate-y-0.5 hover:border-black hover:bg-white hover:shadow-lg hover:shadow-black/5 transition-all duration-300"
           >
             Shop All
           </Link>
@@ -36,7 +36,7 @@ export default function FeaturedProducts({ title = "Top Picks", products, isLoad
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 sm:gap-x-8 gap-y-10 sm:gap-y-16">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 sm:gap-x-8 gap-y-9 sm:gap-y-14">
             {products.slice(0, 8).map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}

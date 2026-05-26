@@ -8,7 +8,7 @@ interface CartContextType {
   cart: Cart | null;
   items: CartItem[];
   total: number;
-  addToCart: (productId: number, quantity: number) => Promise<void>;
+  addToCart: (productId: number, quantity: number, size: string, color?: string) => Promise<void>;
   removeFromCart: (itemId: number) => Promise<void>;
   updateCartItem: (itemId: number, quantity: number) => Promise<void>;
   clearCart: () => Promise<void>;
@@ -44,10 +44,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const addToCart = async (productId: number, quantity: number) => {
+  const addToCart = async (productId: number, quantity: number, size: string, color?: string) => {
     if (!user?.id) return;
     try {
-      const response = await cartService.addToCart(user.id, { product_id: productId, quantity });
+      const response = await cartService.addToCart(user.id, { product_id: productId, quantity, size, color });
       setCart(response.data);
       if (!response.data?.items) {
         await loadCart();

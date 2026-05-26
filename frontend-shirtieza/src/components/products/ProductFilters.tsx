@@ -34,7 +34,7 @@ export default function ProductFilters({ categories, selectedCategory, onCategor
               : 'text-neutral-500 hover:text-black hover:bg-neutral-50'
           }`}
         >
-          {cat.icon} {cat.name}
+          {cat.name}
         </button>
       ))}
     </div>

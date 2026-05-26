@@ -7,8 +7,14 @@ import (
 	"backend-shirtieza/services"
 	"backend-shirtieza/utils"
 	"encoding/json"
+	"fmt"
 	"github.com/gorilla/mux"
+	"io"
 	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
+	"time"
 )
 
 // GetAllOrders - Mendapatkan semua orders (Admin)
@@ -118,6 +124,68 @@ func CancelOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	utils.RespondWithSuccess(w, http.StatusOK, "Order cancelled successfully", order)
+}
+
+// UploadPaymentProof - User uploads manual transfer proof for an order.
+func UploadPaymentProof(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	orderID := vars["id"]
+	var order models.Order
+	if err := config.DB.First(&order, orderID).Error; err != nil {
+		utils.RespondWithError(w, http.StatusNotFound, "Order not found", err.Error())
+		return
+	}
+	if middleware.CurrentUserRole(r) != "admin" {
+		currentUserID, ok := middleware.CurrentUserID(r)
+		if !ok || order.UserID != currentUserID {
+			utils.RespondWithError(w, http.StatusForbidden, "Forbidden", "You can only upload proof for your own order")
+			return
+		}
+	}
+	r.Body = http.MaxBytesReader(w, r.Body, 5<<20)
+	if err := r.ParseMultipartForm(5 << 20); err != nil {
+		utils.RespondWithError(w, http.StatusBadRequest, "Invalid upload", err.Error())
+		return
+	}
+	file, header, err := r.FormFile("payment_proof")
+	if err != nil {
+		utils.RespondWithError(w, http.StatusBadRequest, "Payment proof file is required", err.Error())
+		return
+	}
+	defer file.Close()
+	if header.Size > 5<<20 {
+		utils.RespondWithError(w, http.StatusBadRequest, "Payment proof file must be 5MB or smaller", nil)
+		return
+	}
+	ext := strings.ToLower(filepath.Ext(header.Filename))
+	if ext != ".jpg" && ext != ".jpeg" && ext != ".png" && ext != ".webp" && ext != ".pdf" {
+		utils.RespondWithError(w, http.StatusBadRequest, "Unsupported file type", nil)
+		return
+	}
+	if err := os.MkdirAll("uploads/payment-proofs", 0755); err != nil {
+		utils.RespondWithError(w, http.StatusInternalServerError, "Failed to prepare upload directory", err.Error())
+		return
+	}
+	filename := fmt.Sprintf("order-%d-%d%s", order.ID, time.Now().UnixNano(), ext)
+	destination := filepath.Join("uploads", "payment-proofs", filename)
+	out, err := os.Create(destination)
+	if err != nil {
+		utils.RespondWithError(w, http.StatusInternalServerError, "Failed to save file", err.Error())
+		return
+	}
+	defer out.Close()
+	if _, err := io.Copy(out, file); err != nil {
+		utils.RespondWithError(w, http.StatusInternalServerError, "Failed to save file", err.Error())
+		return
+	}
+	order.PaymentProof = "/uploads/payment-proofs/" + filename
+	order.PaymentStatus = "waiting_confirmation"
+	if err := config.DB.Save(&order).Error; err != nil {
+		utils.RespondWithError(w, http.StatusInternalServerError, "Failed to update order", err.Error())
+		return
+	}
+	config.DB.Preload("User").Preload("Items").Preload("Items.Product").First(&order, order.ID)
+	utils.RespondWithSuccess(w, http.StatusOK, "Payment proof uploaded successfully", order)
 }
 
 // GetAdminStats - Mendapatkan statistik untuk dashboard admin

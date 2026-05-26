@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"net/http"
+	"strings"
 )
 
 // GetUserCart - Mendapatkan keranjang belanja user
@@ -47,8 +48,10 @@ func AddToCart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var cartItemData struct {
-		ProductID uint `json:"product_id"`
-		Quantity  int  `json:"quantity"`
+		ProductID uint   `json:"product_id"`
+		Quantity  int    `json:"quantity"`
+		Size      string `json:"size"`
+		Color     string `json:"color"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&cartItemData); err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid request payload", err.Error())
@@ -80,10 +83,20 @@ func AddToCart(w http.ResponseWriter, r *http.Request) {
 		utils.RespondWithError(w, http.StatusBadRequest, "Insufficient stock", nil)
 		return
 	}
+	cartItemData.Size = strings.TrimSpace(cartItemData.Size)
+	cartItemData.Color = strings.TrimSpace(cartItemData.Color)
+	if cartItemData.Size == "" {
+		utils.RespondWithError(w, http.StatusBadRequest, "Please select a size", nil)
+		return
+	}
+	if strings.TrimSpace(product.Colors) != "" && cartItemData.Color == "" {
+		utils.RespondWithError(w, http.StatusBadRequest, "Please select a color", nil)
+		return
+	}
 	// Check if item already in cart
 	var existingItem models.CartItem
 	if err := config.DB.
-		Where("cart_id = ? AND product_id = ?", cart.ID, cartItemData.ProductID).
+		Where("cart_id = ? AND product_id = ? AND size = ? AND color = ?", cart.ID, cartItemData.ProductID, cartItemData.Size, cartItemData.Color).
 		First(&existingItem).Error; err == nil {
 		// Update quantity
 		existingItem.Quantity += cartItemData.Quantity
@@ -96,6 +109,8 @@ func AddToCart(w http.ResponseWriter, r *http.Request) {
 		cartItem := models.CartItem{
 			CartID:    cart.ID,
 			ProductID: cartItemData.ProductID,
+			Size:      cartItemData.Size,
+			Color:     cartItemData.Color,
 			Quantity:  cartItemData.Quantity,
 			Price:     product.Price,
 		}

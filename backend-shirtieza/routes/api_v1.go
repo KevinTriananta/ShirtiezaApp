@@ -14,7 +14,7 @@ func SetupV1Routes(router *mux.Router) {
 	admin := api.PathPrefix("/admin").Subrouter()
 	admin.Use(middleware.AuthMiddleware)
 	admin.Use(middleware.AdminMiddleware)
-	protected := api.NewRoute().Subrouter()
+	protected := api.PathPrefix("").Subrouter()
 	protected.Use(middleware.AuthMiddleware)
 	// ============ PRODUCTS ============
 	api.HandleFunc("/products", handlers.GetAllProducts).Methods("GET")
@@ -67,9 +67,22 @@ func SetupV1Routes(router *mux.Router) {
 	protected.HandleFunc("/cart/item/{item_id}", handlers.UpdateCartItem).Methods("PUT")
 	protected.HandleFunc("/cart/item/{item_id}", handlers.RemoveFromCart).Methods("DELETE")
 	protected.HandleFunc("/cart/{user_id}/clear", handlers.ClearCart).Methods("DELETE")
+	// ============ WISHLIST ============
+	protected.HandleFunc("/wishlist", handlers.GetWishlist).Methods("GET")
+	protected.HandleFunc("/wishlist", handlers.AddWishlistItem).Methods("POST")
+	protected.HandleFunc("/wishlist/{product_id}", handlers.RemoveWishlistItem).Methods("DELETE")
+	// ============ VOUCHERS ============
+	api.HandleFunc("/vouchers", handlers.GetActiveVouchers).Methods("GET")
+	protected.HandleFunc("/vouchers/me", handlers.GetUserVouchers).Methods("GET")
+	protected.HandleFunc("/vouchers/{id}/claim", handlers.ClaimVoucher).Methods("POST")
+	admin.HandleFunc("/vouchers", handlers.AdminGetVouchers).Methods("GET")
+	admin.HandleFunc("/vouchers", handlers.AdminCreateVoucher).Methods("POST")
+	admin.HandleFunc("/vouchers/{id}", handlers.AdminUpdateVoucher).Methods("PUT")
+	admin.HandleFunc("/vouchers/{id}", handlers.AdminDeleteVoucher).Methods("DELETE")
 	// ============ ORDERS ============
 	protected.HandleFunc("/orders", handlers.CreateOrder).Methods("POST")
 	protected.HandleFunc("/orders/{id}", handlers.GetOrderByID).Methods("GET")
+	protected.HandleFunc("/orders/{id}/payment-proof", handlers.UploadPaymentProof).Methods("POST")
 	// Admin routes for orders
 	admin.HandleFunc("/orders", handlers.GetAllOrders).Methods("GET")
 	admin.HandleFunc("/orders/{id}/status", handlers.UpdateOrderStatus).Methods("PUT")

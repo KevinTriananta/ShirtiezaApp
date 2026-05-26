@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { AlertCircle, Boxes, DollarSign, Package, ShoppingBag, Truck, Users } from 'lucide-react';
+import { AlertCircle, Boxes, DollarSign, Package, ShoppingBag, TicketPercent, Truck, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { orderService } from '../../services/orderService';
 import Card from '../../components/ui/Card';
@@ -77,13 +77,13 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <div className="space-y-8">
-      <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
+      <div className="space-y-8">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="text-[10px] font-black uppercase tracking-[0.35em] text-neutral-400 mb-2">Realtime store overview</p>
           <h2 className="text-2xl font-black uppercase tracking-tight">Admin Dashboard</h2>
         </div>
-        <button onClick={loadDashboard} className="px-5 py-3 bg-black text-white rounded-xl text-[11px] font-black uppercase tracking-widest">
+        <button onClick={loadDashboard} className="w-full rounded-xl bg-black px-5 py-3 text-[11px] font-black uppercase tracking-widest text-white sm:w-fit">
           Refresh Data
         </button>
       </div>
@@ -94,13 +94,13 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4 lg:gap-6">
         {metrics.map((item) => <StatCard key={item.label} {...item} isLoading={isLoading} />)}
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-8">
+      <div className="grid gap-6 lg:grid-cols-3 lg:gap-8">
         <Card padding="lg" className="lg:col-span-2">
-          <div className="flex items-center justify-between mb-8">
+          <div className="mb-6 flex items-start justify-between gap-4 sm:mb-8 sm:items-center">
             <div>
               <h3 className="font-bold tracking-tight text-black">Recent Orders</h3>
               <p className="text-xs text-neutral-400 mt-1">Latest checkout activity from database</p>
@@ -121,15 +121,15 @@ export default function AdminDashboard() {
               {recentOrders.map((order) => {
                 const itemCount = order.items?.reduce((total, item) => total + item.quantity, 0) || 0;
                 return (
-                  <Link key={order.id} to="/admin/orders" className="flex items-center justify-between gap-4 py-4 first:pt-0 last:pb-0 hover:bg-neutral-50 rounded-xl px-2 transition-colors">
-                    <div className="flex items-center gap-4 min-w-0">
-                      <div className="w-12 h-12 rounded-xl bg-neutral-100 flex items-center justify-center font-black text-neutral-400 flex-shrink-0">#{String(order.id).padStart(3, '0')}</div>
-                      <div className="min-w-0">
-                        <p className="text-sm font-bold text-black truncate">{order.order_number}</p>
-                        <p className="text-xs text-neutral-400">{itemCount} item • {order.shipping_city || 'No city'} • {new Date(order.created_at).toLocaleDateString('id-ID')}</p>
+                    <Link key={order.id} to="/admin/orders" className="flex flex-col gap-3 rounded-xl px-2 py-4 transition-colors first:pt-0 last:pb-0 hover:bg-neutral-50 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+                      <div className="flex items-center gap-4 min-w-0">
+                        <div className="w-12 h-12 rounded-xl bg-neutral-100 flex items-center justify-center font-black text-neutral-400 flex-shrink-0">#{String(order.id).padStart(3, '0')}</div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-bold text-black truncate">{order.order_number}</p>
+                          <p className="text-xs text-neutral-400">{itemCount} item • {order.shipping_city || 'No city'} • {new Date(order.created_at).toLocaleDateString('id-ID')}</p>
+                        </div>
                       </div>
-                    </div>
-                    <div className="text-right flex-shrink-0">
+                    <div className="flex shrink-0 items-center justify-between gap-3 sm:block sm:text-right">
                       <p className="text-sm font-black">Rp {order.total.toLocaleString('id-ID')}</p>
                       <span className={`inline-block mt-1 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${statusTone[order.status] || statusTone.pending}`}>{order.status}</span>
                     </div>
@@ -146,6 +146,13 @@ export default function AdminDashboard() {
             <h3 className="text-lg font-black tracking-tight text-black mb-2">Inventory Health</h3>
             <p className="text-sm text-neutral-400 mb-5">{stats.low_stock_products} products need restock. {stats.items_sold} items sold from non-cancelled orders.</p>
             <Link to="/admin/products"><Button className="w-full">Manage Products</Button></Link>
+          </Card>
+
+          <Card padding="lg">
+            <div className="w-12 h-12 rounded-2xl bg-neutral-100 text-black flex items-center justify-center mb-4"><TicketPercent size={22} /></div>
+            <h3 className="text-lg font-black tracking-tight text-black mb-2">Vouchers</h3>
+            <p className="text-sm text-neutral-400 mb-5">Create claimable percentage vouchers with expiry for customer checkout.</p>
+            <Link to="/admin/vouchers"><Button variant="outline" className="w-full">Manage Vouchers</Button></Link>
           </Card>
 
           <Card padding="lg">

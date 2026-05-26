@@ -9,6 +9,8 @@ interface CartResponse {
 interface AddToCartData {
   product_id: number;
   quantity: number;
+  size: string;
+  color?: string;
 }
 
 interface UpdateCartItemData {

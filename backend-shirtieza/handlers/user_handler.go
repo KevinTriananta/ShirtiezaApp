@@ -42,6 +42,7 @@ func userResponse(user models.User) models.UserResponse {
 		Address: user.Address,
 		City:    user.City,
 		Country: user.Country,
+		ZipCode: user.ZipCode,
 		Avatar:  user.Avatar,
 		Role:    user.Role,
 	}

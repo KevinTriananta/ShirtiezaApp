@@ -31,11 +31,19 @@ func InitDB() {
 		&models.ProductReview{},
 		&models.Cart{},
 		&models.CartItem{},
+		&models.Voucher{},
+		&models.UserVoucher{},
+		&models.WishlistItem{},
 		&models.Order{},
 		&models.OrderItem{},
 	)
 	if err != nil {
 		log.Fatalf("Failed to migrate database: %v", err)
+	}
+	if DB.Migrator().HasIndex(&models.Category{}, "idx_categories_name") {
+		if err := DB.Migrator().DropIndex(&models.Category{}, "idx_categories_name"); err != nil {
+			log.Printf("Warning: failed to drop old category name unique index: %v", err)
+		}
 	}
 	fmt.Println("✅ Database migration completed")
 }

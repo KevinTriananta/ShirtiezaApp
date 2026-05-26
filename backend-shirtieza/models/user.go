@@ -33,6 +33,7 @@ type UserResponse struct {
 	Address string `json:"address"`
 	City    string `json:"city"`
 	Country string `json:"country"`
+	ZipCode string `json:"zip_code"`
 	Avatar  string `json:"avatar"`
 	Role    string `json:"role"`
 }

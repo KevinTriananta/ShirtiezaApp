@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, User, Phone, MapPin, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, User, Phone, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../providers/AuthContext';
+import WilayahFields from '../components/common/WilayahFields';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -67,8 +68,8 @@ export default function RegisterPage() {
   const iconClass = 'absolute left-4 top-1/2 -translate-y-1/2 text-neutral-300';
 
   return (
-    <div className="min-h-screen bg-neutral-50 pt-16 lg:pt-[72px] flex items-center justify-center px-6">
-      <div className="w-full max-w-lg py-12 animate-fade-in-up">
+    <div className="min-h-screen bg-neutral-50 pt-16 lg:pt-[72px] flex items-start justify-center px-4 sm:px-6">
+      <div className="w-full max-w-2xl py-8 sm:py-12 animate-fade-in-up">
         {/* Header */}
         <div className="text-center mb-10">
           <Link to="/" className="text-[22px] font-black italic tracking-tight text-black mb-6 inline-block hover:opacity-70 transition-opacity duration-200">
@@ -83,7 +84,7 @@ export default function RegisterPage() {
         </div>
 
         {/* Form Container */}
-        <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-8">
+        <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-5 sm:p-8">
           <form onSubmit={handleSubmit} className="space-y-5">
             {error && (
               <div className="bg-red-50 border border-red-100 text-sm text-red-600 px-4 py-3 rounded-xl flex items-start gap-3 animate-scale-in">
@@ -154,8 +155,7 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            {/* Phone & City */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
               <div>
                 <label htmlFor="reg-phone" className={labelClass}>Phone</label>
                 <div className="relative">
@@ -167,21 +167,6 @@ export default function RegisterPage() {
                     value={formData.phone}
                     onChange={handleChange}
                     placeholder="+62..."
-                    className={inputClass}
-                  />
-                </div>
-              </div>
-              <div>
-                <label htmlFor="reg-city" className={labelClass}>City</label>
-                <div className="relative">
-                  <MapPin size={16} strokeWidth={1.5} className={iconClass} />
-                  <input
-                    id="reg-city"
-                    type="text"
-                    name="city"
-                    value={formData.city}
-                    onChange={handleChange}
-                    placeholder="Jakarta"
                     className={inputClass}
                   />
                 </div>
@@ -202,37 +187,16 @@ export default function RegisterPage() {
               />
             </div>
 
-            {/* Country & ZIP */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="reg-country" className={labelClass}>Country</label>
-                <select
-                  id="reg-country"
-                  name="country"
-                  value={formData.country}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3.5 border border-neutral-200 rounded-xl text-sm text-black focus:outline-none focus:border-black focus:ring-1 focus:ring-black/5 transition-all duration-200 bg-white appearance-none cursor-pointer"
-                >
-                  <option value="Indonesia">Indonesia</option>
-                  <option value="Malaysia">Malaysia</option>
-                  <option value="Singapore">Singapore</option>
-                  <option value="Thailand">Thailand</option>
-                  <option value="Others">Others</option>
-                </select>
-              </div>
-              <div>
-                <label htmlFor="reg-zip" className={labelClass}>ZIP Code</label>
-                <input
-                  id="reg-zip"
-                  type="text"
-                  name="zip_code"
-                  value={formData.zip_code}
-                  onChange={handleChange}
-                  placeholder="12345"
-                  className="w-full px-4 py-3.5 border border-neutral-200 rounded-xl text-sm text-black placeholder:text-neutral-300 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/5 transition-all duration-200"
-                />
-              </div>
-            </div>
+            <WilayahFields
+              city={formData.city}
+              country={formData.country}
+              zipCode={formData.zip_code}
+              onCityChange={(city) => setFormData({ ...formData, city })}
+              onCountryChange={(country) => setFormData({ ...formData, country })}
+              onZipCodeChange={(zipCode) => setFormData({ ...formData, zip_code: zipCode })}
+              labelClass={labelClass}
+              inputClass="w-full px-4 py-3.5 border border-neutral-200 rounded-xl text-sm text-black placeholder:text-neutral-300 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/5 transition-all duration-200"
+            />
 
             {/* Submit */}
             <button

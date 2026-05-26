@@ -135,6 +135,16 @@ h6 {
     transform: translateX(0);
   }
 }
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
 @keyframes shimmer {
   0% {
     background-position: -200% 0;
@@ -154,6 +164,9 @@ h6 {
 }
 .animate-slide-right {
   animation: slideRight 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.animate-slide-in-left {
+  animation: slideInLeft 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 /* Staggered animation delays */
 .delay-100 {
@@ -219,6 +232,13 @@ html {
 }
 .mask-fade-bottom {
   mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 /* ===== Interactive Hover ===== */
 .hover-reveal {

@@ -5,6 +5,7 @@ import { useAuth } from '../providers/AuthContext';
 import { userService } from '../services/userService';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
 import { useToast } from '../providers/ToastContext';
+import WilayahFields from '../components/common/WilayahFields';
 import type { Order } from '../types';
 
 export default function ProfilePage() {
@@ -23,7 +24,7 @@ export default function ProfilePage() {
     address: user?.address || '',
     city: user?.city || '',
     country: user?.country || '',
-    zip_code: (user as any)?.zip_code || '',
+    zip_code: user?.zip_code || '',
     avatar: user?.avatar || '',
   });
 
@@ -39,7 +40,7 @@ export default function ProfilePage() {
       address: user?.address || '',
       city: user?.city || '',
       country: user?.country || '',
-      zip_code: (user as any)?.zip_code || '',
+      zip_code: user?.zip_code || '',
       avatar: user?.avatar || '',
     });
   }, [user]);
@@ -69,7 +70,7 @@ export default function ProfilePage() {
     setMessage({ type: '', text: '' });
     try {
       const response = await userService.updateUserProfile(user.id, formData);
-      updateUser({ ...user, ...response.data });
+      updateUser(response.data);
       setMessage({ type: 'success', text: 'Profile updated successfully!' });
       notify('Profile updated successfully.', 'success');
       setIsEditing(false);
@@ -96,7 +97,7 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-neutral-50 pt-16 lg:pt-[72px]">
       <div className="bg-white border-b border-neutral-100">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 py-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-[11px] tracking-wide">
               <Link to="/" className="text-neutral-400 hover:text-black transition-colors duration-200">Home</Link>
@@ -113,7 +114,7 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-8 lg:py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12">
         {message.text && (
           <div className={`mb-6 px-4 py-3 rounded-xl flex items-center gap-3 text-sm animate-scale-in ${
             message.type === 'success' ? 'bg-emerald-50 border border-emerald-100 text-emerald-700' : 'bg-red-50 border border-red-100 text-red-600'
@@ -123,29 +124,30 @@ export default function ProfilePage() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-6 lg:gap-8">
           {/* Profile Card */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-6 lg:p-8">
+            <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-5 sm:p-6 lg:p-8">
               <div className="text-center mb-6">
                 <div className="w-24 h-24 mx-auto bg-neutral-100 rounded-3xl flex items-center justify-center mb-4 overflow-hidden border border-neutral-100">
                   {user.avatar ? <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" /> : <User size={34} className="text-neutral-400" strokeWidth={1.2} />}
                 </div>
                 <h2 className="text-lg font-bold text-black">{user.name}</h2>
-                
+                <p className="mt-1 text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400">{user.role}</p>
               </div>
               <div className="space-y-4 pt-4 border-t border-neutral-100">
                 {[
                   { label: 'Email', value: user.email, icon: <Mail size={15} /> },
                   { label: 'Phone', value: user.phone, icon: <Phone size={15} /> },
-                  { label: 'Location', value: [user.city, user.country].filter(Boolean).join(', '), icon: <MapPin size={15} /> },
+                  { label: 'Address', value: user.address, icon: <MapPin size={15} /> },
+                  { label: 'Location', value: [user.city, user.country, user.zip_code].filter(Boolean).join(', '), icon: <MapPin size={15} /> },
                 
                 ].map((item) => item.value ? (
                   <div key={item.label} className="flex gap-3">
                     <span className="mt-0.5 text-neutral-300">{item.icon}</span>
-                    <div>
+                    <div className="min-w-0">
                     <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-400 mb-1">{item.label}</p>
-                    <p className="text-sm font-medium text-black">{item.value}</p>
+                    <p className="break-words text-sm font-medium text-black">{item.value}</p>
                     </div>
                   </div>
                 ) : null)}
@@ -156,8 +158,8 @@ export default function ProfilePage() {
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Edit Profile */}
-            <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-6 lg:p-8">
-              <div className="flex items-center justify-between mb-6">
+            <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-5 sm:p-6 lg:p-8">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
                 <h3 className="text-sm font-bold uppercase tracking-[0.1em]">Account Information</h3>
                 <button
                   onClick={() => setIsEditing(!isEditing)}
@@ -169,6 +171,7 @@ export default function ProfilePage() {
 
               {isEditing ? (
                 <form onSubmit={handleUpdateProfile} className="space-y-4">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div>
                     <label className={labelClass}>Name</label>
                     <input type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className={inputClass} />
@@ -177,29 +180,24 @@ export default function ProfilePage() {
                     <label className={labelClass}>Phone</label>
                     <input type="tel" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} className={inputClass} />
                   </div>
+                  </div>
                   <div>
                     <label className={labelClass}>Address</label>
                     <input type="text" value={formData.address} onChange={(e) => setFormData({ ...formData, address: e.target.value })} className={inputClass} />
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className={labelClass}>City</label>
-                      <input type="text" value={formData.city} onChange={(e) => setFormData({ ...formData, city: e.target.value })} className={inputClass} />
-                    </div>
-                    <div>
-                      <label className={labelClass}>Country</label>
-                      <input type="text" value={formData.country} onChange={(e) => setFormData({ ...formData, country: e.target.value })} className={inputClass} />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className={labelClass}>ZIP Code</label>
-                      <input type="text" value={formData.zip_code} onChange={(e) => setFormData({ ...formData, zip_code: e.target.value })} className={inputClass} />
-                    </div>
-                    <div>
-                      <label className={labelClass}>Avatar URL</label>
-                      <input type="text" value={formData.avatar} onChange={(e) => setFormData({ ...formData, avatar: e.target.value })} placeholder="https://..." className={inputClass} />
-                    </div>
+                  <WilayahFields
+                    city={formData.city}
+                    country={formData.country || 'Indonesia'}
+                    zipCode={formData.zip_code}
+                    onCityChange={(city) => setFormData({ ...formData, city })}
+                    onCountryChange={(country) => setFormData({ ...formData, country })}
+                    onZipCodeChange={(zipCode) => setFormData({ ...formData, zip_code: zipCode })}
+                    labelClass={labelClass}
+                    inputClass={inputClass}
+                  />
+                  <div>
+                    <label className={labelClass}>Avatar URL</label>
+                    <input type="text" value={formData.avatar} onChange={(e) => setFormData({ ...formData, avatar: e.target.value })} placeholder="https://..." className={inputClass} />
                   </div>
                   <button
                     type="submit"
@@ -211,19 +209,19 @@ export default function ProfilePage() {
                   </button>
                 </form>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   {[
                     { label: 'Full Name', value: user.name },
                     { label: 'Phone', value: user.phone || 'Not provided' },
                     { label: 'Address', value: user.address || 'Not provided' },
                     { label: 'City', value: user.city || 'Not provided' },
                     { label: 'Country', value: user.country || 'Not provided' },
-                    { label: 'ZIP Code', value: (user as any).zip_code || 'Not provided' },
+                    { label: 'ZIP Code', value: user.zip_code || 'Not provided' },
                     { label: 'Avatar URL', value: user.avatar || 'Not provided' },
                   ].map((item) => (
                     <div key={item.label}>
                       <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-400 mb-1.5">{item.label}</p>
-                      <p className="text-sm font-medium text-black">{item.value}</p>
+                      <p className="break-words text-sm font-medium text-black">{item.value}</p>
                     </div>
                   ))}
                 </div>
@@ -231,7 +229,7 @@ export default function ProfilePage() {
             </div>
 
             {/* Orders */}
-            <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-6 lg:p-8">
+            <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-5 sm:p-6 lg:p-8">
               <h3 className="text-sm font-bold uppercase tracking-[0.1em] mb-6">Your Orders</h3>
               {isLoading ? (
                 <div className="space-y-3">
@@ -255,14 +253,17 @@ export default function ProfilePage() {
                     <Link
                       key={order.id}
                       to={`/orders/${order.id}`}
-                      className="flex items-center justify-between py-4 px-4 rounded-xl hover:bg-neutral-50 transition-all duration-200 group"
+                      className="flex flex-col gap-3 py-4 px-4 rounded-xl hover:bg-neutral-50 transition-all duration-200 group sm:flex-row sm:items-center sm:justify-between"
                     >
                       <div>
                         <p className="text-sm font-semibold text-black">{order.order_number}</p>
                         <p className="text-[11px] text-neutral-400 mt-0.5">{new Date(order.created_at).toLocaleDateString('id-ID')}</p>
+                        <p className="mt-1 text-[10px] uppercase tracking-widest text-neutral-400">
+                          {(order.items || []).slice(0, 2).map((item) => [item.product?.name || `Product #${item.product_id}`, item.size && `Size ${item.size}`, item.color && `Color ${item.color}`].filter(Boolean).join(' · ')).join(' / ')}
+                        </p>
                       </div>
-                      <div className="flex items-center gap-3">
-                        <div className="text-right">
+                      <div className="flex items-center justify-between gap-3 sm:justify-end">
+                        <div className="text-left sm:text-right">
                           <p className="text-sm font-bold text-black">Rp {order.total.toLocaleString('id-ID')}</p>
                           <span className={`text-[10px] font-bold uppercase tracking-[0.1em] ${order.status === 'delivered' ? 'text-emerald-600' : 'text-neutral-400'}`}>
                             {order.status}

@@ -4,7 +4,6 @@ import type { Category, Product } from '../types';
 import { categoryService } from '../services/categoryService';
 import { collectionService } from '../services/collectionService';
 import { productService } from '../services/productService';
-import { demoCategories, demoProducts } from '../data/demoData';
 
 export function useProductListing() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -46,7 +45,7 @@ export function useProductListing() {
       setTotalPages(response.data.total_pages || 1);
     } catch (error) {
       console.error('Failed to load products:', error);
-      setProducts(demoProducts);
+      setProducts([]);
       setTotalPages(1);
     } finally {
       setIsLoading(false);
@@ -56,10 +55,10 @@ export function useProductListing() {
   const loadCategories = async () => {
     try {
       const response = await categoryService.getAllCategories();
-      setCategories(response.data?.length ? response.data : demoCategories);
+      setCategories(response.data || []);
     } catch (error) {
       console.error('Failed to load categories:', error);
-      setCategories(demoCategories);
+      setCategories([]);
     }
   };
 

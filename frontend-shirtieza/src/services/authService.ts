@@ -27,6 +27,7 @@ interface AuthResponse {
       address?: string;
       city?: string;
       country?: string;
+      zip_code?: string;
       avatar?: string;
       role: string;
     };

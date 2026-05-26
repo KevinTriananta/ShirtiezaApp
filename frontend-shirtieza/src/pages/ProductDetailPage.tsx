@@ -11,7 +11,7 @@ export default function ProductDetailPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen pt-16 lg:pt-[72px]">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 py-8 lg:py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-16">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16">
             <div className="aspect-[3/4] skeleton rounded-2xl" />
             <div className="lg:py-4 space-y-6">
@@ -48,7 +48,7 @@ export default function ProductDetailPage() {
     <div className="min-h-screen bg-white pt-16 lg:pt-[72px]">
       {/* Breadcrumb */}
       <div className="border-b border-neutral-100">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 py-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center gap-2 text-[11px] tracking-wide">
             <Link to="/" className="text-neutral-400 hover:text-black transition-colors duration-200">Home</Link>
             <span className="text-neutral-300">/</span>
@@ -59,8 +59,8 @@ export default function ProductDetailPage() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-8 lg:py-16">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-16">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-7 sm:gap-8 lg:gap-16">
           <ProductGallery product={product} />
           <ProductPurchasePanel product={product} error={error} onError={setError} />
         </div>

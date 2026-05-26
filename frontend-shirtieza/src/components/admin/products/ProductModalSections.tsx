@@ -1,4 +1,4 @@
-import { ImagePlus, Trash2, Upload } from 'lucide-react';
+import { ImagePlus, Trash2 } from 'lucide-react';
 import type { CollectionCategoryFieldsProps, ProductFormSectionProps } from './productFormTypes';
 import { getAdditionalImages, getFilteredCategories, getNextCollectionFormData } from './productFormTypes';
 
@@ -103,7 +103,6 @@ export function ProductImageFields({ formData, setFormData }: ProductFormSection
         <div className="flex gap-4">
           <input type="text" placeholder="Paste image URL or upload PNG/JPG/WEBP" className="flex-grow px-5 py-4 bg-neutral-50 border border-neutral-200 rounded-2xl outline-none focus:ring-4 focus:ring-black/5 focus:border-black/20 transition-all font-medium" value={formData.image} onChange={(e) => setFormData({ ...formData, image: e.target.value })} />
           <label className="p-4 bg-neutral-100 text-neutral-500 rounded-2xl hover:bg-black hover:text-white transition-all cursor-pointer" title="Upload image file"><ImagePlus size={20} /><input type="file" accept="image/png,image/jpeg,image/jpg,image/webp,image/gif" onChange={handleFileUpload} className="hidden" /></label>
-          <button type="button" onClick={() => setFormData({ ...formData, image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=900&auto=format&fit=crop' })} title="Use sample product image" className="p-4 bg-neutral-100 text-neutral-500 rounded-2xl hover:bg-black hover:text-white transition-all"><Upload size={20} /></button>
         </div>
       </div>
       <div className="col-span-2">

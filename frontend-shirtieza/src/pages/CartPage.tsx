@@ -1,19 +1,22 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingCart, ArrowRight, AlertCircle, CreditCard, Truck } from 'lucide-react';
+import { ShoppingCart, ArrowRight, AlertCircle, CreditCard, Truck, Heart } from 'lucide-react';
 import { useCart } from '../providers/CartContext';
 import { useAuth } from '../providers/AuthContext';
 import { useToast } from '../providers/ToastContext';
 import { orderService } from '../services/orderService';
+import { voucherService } from '../services/voucherService';
+import { wishlistService } from '../services/wishlistService';
 import { wilayahService } from '../services/wilayahService';
 import type { City, District, Province, Village } from '../services/wilayahService';
+import type { UserVoucher, WishlistItem } from '../types';
 import CartItem from '../components/cart/CartItem';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
 
 export default function CartPage() {
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();
-  const { items, cart, removeFromCart, updateCartItem, clearCart, isLoading } = useCart();
+  const { items, cart, removeFromCart, updateCartItem, isLoading } = useCart();
   const { notify } = useToast();
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [error, setError] = useState('');
@@ -33,6 +36,10 @@ export default function CartPage() {
   const [districts, setDistricts] = useState<District[]>([]);
   const [villages, setVillages] = useState<Village[]>([]);
   const [selectedRegion, setSelectedRegion] = useState({ provinceId: 0, cityId: 0, districtId: 0, villageId: 0 });
+  const [selectedItemIds, setSelectedItemIds] = useState<number[]>([]);
+  const [userVouchers, setUserVouchers] = useState<UserVoucher[]>([]);
+  const [selectedUserVoucherId, setSelectedUserVoucherId] = useState<number>(0);
+  const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -43,6 +50,16 @@ export default function CartPage() {
   useEffect(() => {
     wilayahService.getProvinces().then(setProvinces).catch((error) => console.error('Failed to load provinces:', error));
   }, []);
+
+  useEffect(() => {
+    setSelectedItemIds(items.map((item) => item.id));
+  }, [items]);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    voucherService.getUserVouchers().then((response) => setUserVouchers(response.data)).catch((error) => console.error('Failed to load vouchers:', error));
+    wishlistService.getWishlist().then((response) => setWishlistItems(response.data || [])).catch((error) => console.error('Failed to load wishlist:', error));
+  }, [isAuthenticated]);
 
   useEffect(() => {
     if (!selectedRegion.provinceId) return;
@@ -94,9 +111,17 @@ export default function CartPage() {
     );
   }
 
-  const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const selectedItems = items.filter((item) => selectedItemIds.includes(item.id));
+  const subtotal = selectedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const selectedUserVoucher = userVouchers.find((item) => item.id === selectedUserVoucherId && !item.used_at);
+  const voucher = selectedUserVoucher?.voucher;
+  const eligibleVoucherSubtotal = voucher?.category_id
+    ? selectedItems.filter((item) => item.product.category?.id === voucher.category_id).reduce((sum, item) => sum + (item.price * item.quantity), 0)
+    : subtotal;
+  const rawDiscount = voucher && subtotal >= (voucher.min_purchase || 0) ? eligibleVoucherSubtotal * (voucher.discount_percentage / 100) : 0;
+  const discount = voucher?.max_discount ? Math.min(rawDiscount, voucher.max_discount) : rawDiscount;
   const tax = subtotal * taxRate;
-  const total = subtotal + tax + shippingCost;
+  const total = Math.max(0, subtotal - discount) + tax + shippingCost;
 
   const handleRemoveItem = async () => {
     if (!pendingRemoveId) return;
@@ -111,6 +136,11 @@ export default function CartPage() {
 
   const handleCheckout = async () => {
     if (!user) return;
+    if (selectedItems.length === 0) {
+      setError('Please select at least one cart item before checkout.');
+      notify('Please select at least one cart item before checkout.', 'error');
+      return;
+    }
     if (!shipping.address.trim() || !shipping.city.trim() || !shipping.zip.trim()) {
       setError('Please complete shipping address before checkout.');
       notify('Please complete shipping address before checkout.', 'error');
@@ -120,9 +150,11 @@ export default function CartPage() {
     setError('');
     setIsCheckingOut(true);
     try {
-      const orderItems = items.map((item) => ({
+      const orderItems = selectedItems.map((item) => ({
         product_id: item.product.id,
         quantity: item.quantity,
+        size: item.size,
+        color: item.color,
       }));
 
       const response = await orderService.createOrder({
@@ -134,10 +166,11 @@ export default function CartPage() {
         shipping_cost: shippingCost,
         tax: Math.round(tax),
         payment_method: shipping.paymentMethod,
+        user_voucher_id: selectedUserVoucherId || undefined,
+        cart_item_ids: selectedItemIds,
         items: orderItems,
       });
 
-      await clearCart();
       notify('Order created successfully.', 'success');
       navigate(`/orders/${response.data.id}`);
     } catch (err: any) {
@@ -147,6 +180,17 @@ export default function CartPage() {
     } finally {
       setIsCheckingOut(false);
     }
+  };
+
+  const handleCheckoutSingleItem = (item: typeof items[number]) => {
+    navigate(`/checkout-now/${item.product.id}`, {
+      state: {
+        product: item.product,
+        quantity: item.quantity,
+        size: item.size,
+        color: item.color,
+      },
+    });
   };
 
   return (
@@ -182,17 +226,50 @@ export default function CartPage() {
                 <p className="text-[10px] font-black uppercase tracking-[0.3em] text-neutral-400">Cart Items</p>
                 <h2 className="mt-1 text-lg font-black tracking-tight">Your Selection</h2>
               </div>
-              <span className="rounded-full bg-neutral-50 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-neutral-400">{items.length} item{items.length > 1 ? 's' : ''}</span>
-            </div>
+                  <span className="rounded-full bg-neutral-50 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-neutral-400">{items.length} item{items.length > 1 ? 's' : ''}</span>
+                </div>
+                <div className="mb-4 flex flex-wrap items-center gap-3 text-[11px] font-bold uppercase tracking-widest text-neutral-400">
+                  <button type="button" onClick={() => setSelectedItemIds(items.map((item) => item.id))} className="hover:text-black">Select All</button>
+                  <span>/</span>
+                  <button type="button" onClick={() => setSelectedItemIds([])} className="hover:text-black">Clear Selection</button>
+                  <span className="ml-auto text-black">{selectedItems.length} selected</span>
+                </div>
             <div className="space-y-4">
               {items.map((item) => (
                 <CartItem
-                  key={item.id}
-                  item={item}
-                  onUpdateQuantity={updateCartItem}
+                      key={item.id}
+                      item={item}
+                      isSelected={selectedItemIds.includes(item.id)}
+                      onSelect={(id, selected) => setSelectedItemIds((current) => selected ? [...new Set([...current, id])] : current.filter((itemId) => itemId !== id))}
+                      onUpdateQuantity={updateCartItem}
                   onRemove={setPendingRemoveId}
+                  onCheckoutNow={handleCheckoutSingleItem}
                 />
               ))}
+            </div>
+            <div className="mt-8 border-t border-neutral-100 pt-6">
+              <div className="mb-5 flex items-center justify-between gap-4">
+                <div className="flex items-center gap-2">
+                  <Heart size={16} className="text-black" />
+                  <h2 className="text-sm font-black uppercase tracking-[0.16em]">Liked Items</h2>
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400">{wishlistItems.length} saved</span>
+              </div>
+              {wishlistItems.length === 0 ? (
+                <p className="rounded-2xl bg-neutral-50 p-5 text-sm text-neutral-400">No liked items yet. Tap the heart on products to save them here.</p>
+              ) : (
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  {wishlistItems.map((item) => item.product && (
+                    <Link key={item.id} to={`/products/${item.product.slug}`} className="flex items-center gap-3 rounded-2xl bg-neutral-50 p-3 transition-colors hover:bg-neutral-100">
+                      <img src={item.product.image} alt={item.product.name} className="h-16 w-14 rounded-xl object-cover" />
+                      <div className="min-w-0">
+                        <p className="truncate text-xs font-black text-black">{item.product.name}</p>
+                        <p className="text-[11px] text-neutral-400">Rp {(item.product.discount_price || item.product.price).toLocaleString('id-ID')}</p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
@@ -248,19 +325,33 @@ export default function CartPage() {
 
                 <div>
                   <div className="mb-3 flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-neutral-500">
+                    Voucher
+                  </div>
+                  <select value={selectedUserVoucherId} onChange={(e) => setSelectedUserVoucherId(Number(e.target.value))} className="w-full rounded-2xl border border-neutral-200 bg-white px-4 py-3 text-sm outline-none transition-all focus:border-black/20 focus:ring-4 focus:ring-black/5">
+                    <option value={0}>No voucher</option>
+                    {userVouchers.filter((item) => !item.used_at && item.voucher).map((item) => (
+                      <option key={item.id} value={item.id}>{item.voucher?.code} · {item.voucher?.discount_percentage}% off</option>
+                    ))}
+                  </select>
+                  {voucher && discount <= 0 && <p className="mt-2 text-[11px] text-red-500">Voucher belum memenuhi minimum belanja atau kategori produk.</p>}
+                </div>
+
+                <div>
+                  <div className="mb-3 flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-neutral-500">
                     <CreditCard size={15} />
                     Payment
                   </div>
                   <select value={shipping.paymentMethod} onChange={(e) => setShipping({ ...shipping, paymentMethod: e.target.value })} className="w-full rounded-2xl border border-neutral-200 bg-white px-4 py-3 text-sm outline-none transition-all focus:border-black/20 focus:ring-4 focus:ring-black/5">
                     <option value="bank_transfer">Bank Transfer</option>
                     <option value="cod">Cash on Delivery</option>
-                    <option value="ewallet">E-Wallet Demo</option>
+                    <option value="ewallet">E-Wallet</option>
                   </select>
                 </div>
 
                 <div className="space-y-4 border-t border-neutral-200/70 pt-5">
                   {[
                     { label: 'Subtotal', value: subtotal },
+                    { label: 'Voucher', value: -Math.round(discount) },
                     { label: 'Tax (5%)', value: Math.round(tax) },
                     { label: 'Shipping', value: shippingCost },
                   ].map((row) => (

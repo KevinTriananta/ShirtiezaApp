@@ -7,7 +7,7 @@ import (
 
 type Category struct {
 	ID           uint           `gorm:"primaryKey" json:"id"`
-	Name         string         `json:"name" gorm:"uniqueIndex;not null"`
+	Name         string         `json:"name" gorm:"not null"`
 	Slug         string         `json:"slug" gorm:"uniqueIndex;not null"`
 	Icon         string         `json:"icon"`
 	Image        string         `json:"image"`

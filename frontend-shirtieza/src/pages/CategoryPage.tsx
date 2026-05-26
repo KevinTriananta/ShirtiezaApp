@@ -30,20 +30,33 @@ export default function CategoryPage() {
 
   return (
     <div className="min-h-screen bg-white pt-16 lg:pt-[72px]">
-      <div className="bg-neutral-950 text-white py-16 lg:py-24">
+      <div className="border-b border-neutral-100 bg-neutral-950 text-white">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <Link
             to="/categories"
-            className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-neutral-500 hover:text-white mb-6 transition-colors duration-300 group"
+            className="inline-flex items-center gap-1.5 pt-10 text-[11px] font-semibold uppercase tracking-[0.2em] text-neutral-500 hover:text-white transition-colors duration-300 group"
           >
             <ChevronLeft size={14} className="group-hover:-translate-x-1 transition-transform duration-200" /> Back to Categories
           </Link>
           {category && (
-            <>
-              <div className="text-4xl mb-4">{category.icon || '👕'}</div>
-              <h1 className="text-3xl lg:text-5xl font-black uppercase tracking-tight mb-3">{category.name}</h1>
-              <p className="text-base text-neutral-400 max-w-lg leading-relaxed">{category.description}</p>
-            </>
+            <div className="grid gap-10 py-12 lg:grid-cols-[1fr_320px] lg:items-end lg:py-20">
+              <div>
+                <p className="mb-4 text-[10px] font-black uppercase tracking-[0.34em] text-neutral-500">
+                  {category.collection?.name || 'Category'}
+                </p>
+                <h1 className="max-w-4xl text-4xl font-black uppercase leading-[0.9] tracking-tight sm:text-6xl lg:text-7xl">
+                  {category.name}
+                </h1>
+              </div>
+              <div className="border-t border-white/10 pt-5 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0">
+                <p className="text-sm leading-relaxed text-neutral-400">
+                  {category.description || 'A clean edit of pieces selected for everyday wear.'}
+                </p>
+                <p className="mt-6 text-[10px] font-black uppercase tracking-[0.28em] text-neutral-600">
+                  {products.length} pieces
+                </p>
+              </div>
+            </div>
           )}
         </div>
       </div>
