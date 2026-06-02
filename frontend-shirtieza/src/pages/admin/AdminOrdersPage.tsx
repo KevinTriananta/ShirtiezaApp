@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Search, RefreshCw, PackageCheck, Truck, XCircle, FileText } from 'lucide-react';
-import type { Order } from '../../types';
-import { orderService } from '../../services/orderService';
-import { API_BASE_URL } from '../../config/env';
+import { orderService } from '@shared/api/orderService';
+import { API_BASE_URL } from '@shared/config/env';
+import type { Order } from '@shared/types';
 
 const apiOrigin = API_BASE_URL.replace(/\/api\/v1\/?$/, '');
 

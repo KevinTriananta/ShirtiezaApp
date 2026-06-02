@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, User, Phone, AlertCircle, Eye, EyeOff } from 'lucide-react';
-import { useAuth } from '../providers/AuthContext';
-import WilayahFields from '../components/common/WilayahFields';
+import { useAuth } from '@app/providers/AuthContext';
+import WilayahFields from '@shared/components/WilayahFields';
 
 export default function RegisterPage() {
   const navigate = useNavigate();

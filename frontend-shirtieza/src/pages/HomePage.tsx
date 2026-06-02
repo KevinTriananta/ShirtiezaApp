@@ -1,16 +1,16 @@
 import { useEffect, useState } from 'react';
-import type { Product, Category } from '../types';
-import { productService } from '../services/productService';
-import { categoryService } from '../services/categoryService';
-import { collectionService } from '../services/collectionService';
-import Hero from '../components/home/Hero';
-import Marquee from '../components/home/Marquee';
-import CategoryGrid from '../components/home/CategoryGrid';
-import FeaturedProducts from '../components/home/FeaturedProducts';
-import Features from '../components/home/Features';
-import Newsletter from '../components/home/Newsletter';
-import ExclusiveDrop from '../components/home/ExclusiveDrop';
-import PromoTiles from '../components/home/PromoTiles';
+import CategoryGrid from '@features/home/components/CategoryGrid';
+import ExclusiveDrop from '@features/home/components/ExclusiveDrop';
+import FeaturedProducts from '@features/home/components/FeaturedProducts';
+import Features from '@features/home/components/Features';
+import Hero from '@features/home/components/Hero';
+import Marquee from '@features/home/components/Marquee';
+import Newsletter from '@features/home/components/Newsletter';
+import PromoTiles from '@features/home/components/PromoTiles';
+import { categoryService } from '@shared/api/categoryService';
+import { collectionService } from '@shared/api/collectionService';
+import { productService } from '@shared/api/productService';
+import type { Product, Category } from '@shared/types';
 
 export default function HomePage() {
   const [newArrivals, setNewArrivals] = useState<Product[]>([]);

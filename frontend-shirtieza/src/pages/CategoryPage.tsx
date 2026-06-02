@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
-import type { Category, Product } from '../types';
-import { categoryService } from '../services/categoryService';
-import { productService } from '../services/productService';
-import ProductCard from '../components/common/ProductCard';
+import ProductCard from '@features/products/components/ProductCard';
+import { categoryService } from '@shared/api/categoryService';
+import { productService } from '@shared/api/productService';
+import type { Category, Product } from '@shared/types';
 
 export default function CategoryPage() {
   const { slug } = useParams<{ slug: string }>();

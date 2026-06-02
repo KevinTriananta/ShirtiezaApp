@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowUpRight } from 'lucide-react';
-import type { Category } from '../types';
-import { categoryService } from '../services/categoryService';
+import { categoryService } from '@shared/api/categoryService';
+import type { Category } from '@shared/types';
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);

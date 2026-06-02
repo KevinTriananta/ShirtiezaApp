@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
-import { Plus, Trash2 } from 'lucide-react';
-import { categoryService } from '../../services/categoryService';
-import { collectionService } from '../../services/collectionService';
-import { productService } from '../../services/productService';
-import ConfirmDialog from '../../components/ui/ConfirmDialog';
-import { useToast } from '../../providers/ToastContext';
-import type { Category, Collection, Product } from '../../types';
+import { useToast } from '@app/providers/ToastContext';
+import CatalogRow from '@features/admin/catalog/components/CatalogRow';
+import CatalogSection from '@features/admin/catalog/components/CatalogSection';
+import NewArrivalsSection from '@features/admin/catalog/components/NewArrivalsSection';
+import { categoryService } from '@shared/api/categoryService';
+import { collectionService } from '@shared/api/collectionService';
+import { productService } from '@shared/api/productService';
+import type { Category, Collection, Product } from '@shared/types';
+import ConfirmDialog from '@shared/ui/ConfirmDialog';
 
 type PendingDelete =
   | { type: 'category'; item: Category }
@@ -185,127 +187,6 @@ export default function AdminCatalogPage() {
         onCancel={() => setPendingDelete(null)}
         onConfirm={confirmDelete}
       />
-    </div>
-  );
-}
-
-function NewArrivalsSection({
-  products,
-  selectedIds,
-  isSaving,
-  isUnavailable,
-  onToggle,
-  onSave,
-}: {
-  products: Product[];
-  selectedIds: number[];
-  isSaving: boolean;
-  isUnavailable: boolean;
-  onToggle: (productId: number) => void;
-  onSave: () => void;
-}) {
-  return (
-    <section className="rounded-[28px] border border-neutral-200 bg-white p-6 lg:col-span-2">
-      <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-neutral-400">Homepage</p>
-          <h2 className="mt-1 font-black uppercase tracking-tight">New Arrivals</h2>
-        </div>
-        <div className="flex items-center gap-3">
-          <span className="rounded-full bg-neutral-50 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-neutral-400">{selectedIds.length}/4 selected</span>
-          <button
-            type="button"
-            onClick={onSave}
-            disabled={isSaving || isUnavailable}
-            className="rounded-2xl bg-black px-5 py-3 text-[11px] font-black uppercase tracking-widest text-white transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-black/10 disabled:bg-neutral-200 disabled:text-neutral-500 disabled:hover:translate-y-0"
-          >
-            {isSaving ? 'Saving...' : 'Save'}
-          </button>
-        </div>
-      </div>
-
-      {isUnavailable ? (
-        <p className="rounded-2xl bg-red-50 p-5 text-sm text-red-600">Collection New Arrivals belum tersedia. Buat collection dengan slug new-arrivals terlebih dahulu.</p>
-      ) : products.length === 0 ? (
-        <p className="rounded-2xl bg-neutral-50 p-5 text-sm text-neutral-400">Belum ada produk real di database.</p>
-      ) : (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {products.map((product) => {
-            const isSelected = selectedIds.includes(product.id);
-            const isLocked = !isSelected && selectedIds.length >= 4;
-            return (
-              <button
-                key={product.id}
-                type="button"
-                onClick={() => onToggle(product.id)}
-                disabled={isLocked}
-                className={`flex items-center gap-3 rounded-2xl border p-3 text-left transition-all ${isSelected ? 'border-black bg-black text-white shadow-xl shadow-black/10' : 'border-neutral-200 bg-neutral-50 text-black hover:border-black/20 hover:bg-white'} ${isLocked ? 'cursor-not-allowed opacity-45' : ''}`}
-              >
-                <img src={product.image} alt={product.name} className="h-16 w-14 rounded-xl object-cover" />
-                <div className="min-w-0">
-                  <p className="truncate text-xs font-black">{product.name}</p>
-                  <p className={`mt-1 text-[11px] ${isSelected ? 'text-white/60' : 'text-neutral-400'}`}>Rp {product.price.toLocaleString('id-ID')}</p>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      )}
-    </section>
-  );
-}
-
-function CatalogSection({
-  title,
-  count,
-  inputValue,
-  inputPlaceholder,
-  onInputChange,
-  onSubmit,
-  children,
-  extraInput,
-}: {
-  title: string;
-  count: number;
-  inputValue: string;
-  inputPlaceholder: string;
-  onInputChange: (value: string) => void;
-  onSubmit: (event: React.FormEvent) => void;
-  children: React.ReactNode;
-  extraInput?: React.ReactNode;
-}) {
-  return (
-    <section className="rounded-[28px] border border-neutral-200 bg-white p-6">
-      <div className="mb-5 flex items-center justify-between gap-4">
-        <div>
-          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-neutral-400">Catalog</p>
-          <h2 className="mt-1 font-black uppercase tracking-tight">{title}</h2>
-        </div>
-        <span className="rounded-full bg-neutral-50 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-neutral-400">{count}</span>
-      </div>
-      <form onSubmit={onSubmit} className="mb-6 flex flex-col gap-3 sm:flex-row">
-        <input value={inputValue} onChange={(e) => onInputChange(e.target.value)} placeholder={inputPlaceholder} className="flex-1 rounded-2xl border border-neutral-200 px-4 py-3 text-sm outline-none transition-all focus:border-black/20 focus:ring-4 focus:ring-black/5" />
-        {extraInput}
-        <button className="inline-flex items-center gap-2 rounded-2xl bg-black px-5 text-[11px] font-black uppercase tracking-widest text-white transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-black/10">
-          <Plus size={15} />
-          Add
-        </button>
-      </form>
-      <div className="space-y-2">{children}</div>
-    </section>
-  );
-}
-
-function CatalogRow({ label, slug, meta, onDelete }: { label: string; slug: string; meta?: string; onDelete: () => void }) {
-  return (
-    <div className="flex items-center justify-between gap-4 rounded-2xl bg-neutral-50 p-3 transition-all hover:bg-neutral-100/70">
-      <div className="min-w-0">
-        <p className="truncate text-sm font-black text-black">{label}</p>
-        <p className="mt-1 truncate text-xs font-medium text-neutral-400">/{slug}{meta ? ` • ${meta}` : ''}</p>
-      </div>
-      <button onClick={onDelete} className="rounded-xl p-2 text-neutral-300 transition-all hover:bg-red-50 hover:text-red-600" title="Delete">
-        <Trash2 size={16} />
-      </button>
     </div>
   );
 }

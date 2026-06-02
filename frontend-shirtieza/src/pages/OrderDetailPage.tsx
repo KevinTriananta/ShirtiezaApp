@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { AlertCircle, CheckCircle2, ChevronLeft, FileText, Upload } from 'lucide-react';
-import type { Order } from '../types';
-import { orderService } from '../services/orderService';
-import { useAuth } from '../providers/AuthContext';
-import { API_BASE_URL } from '../config/env';
+import { useAuth } from '@app/providers/AuthContext';
+import { API_BASE_URL } from '@shared/config/env';
+import { orderService } from '@shared/api/orderService';
+import type { Order } from '@shared/types';
 
 const apiOrigin = API_BASE_URL.replace(/\/api\/v1\/?$/, '');
 

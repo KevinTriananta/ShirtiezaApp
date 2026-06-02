@@ -1,17 +1,17 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ShoppingCart, ArrowRight, AlertCircle, CreditCard, Truck, Heart } from 'lucide-react';
-import { useCart } from '../providers/CartContext';
-import { useAuth } from '../providers/AuthContext';
-import { useToast } from '../providers/ToastContext';
-import { orderService } from '../services/orderService';
-import { voucherService } from '../services/voucherService';
-import { wishlistService } from '../services/wishlistService';
-import { wilayahService } from '../services/wilayahService';
-import type { City, District, Province, Village } from '../services/wilayahService';
-import type { UserVoucher, WishlistItem } from '../types';
-import CartItem from '../components/cart/CartItem';
-import ConfirmDialog from '../components/ui/ConfirmDialog';
+import { useAuth } from '@app/providers/AuthContext';
+import { useCart } from '@app/providers/CartContext';
+import { useToast } from '@app/providers/ToastContext';
+import CartItem from '@features/cart/components/CartItem';
+import { orderService } from '@shared/api/orderService';
+import { voucherService } from '@shared/api/voucherService';
+import { wilayahService } from '@shared/api/wilayahService';
+import type { City, District, Province, Village } from '@shared/api/wilayahService';
+import { wishlistService } from '@shared/api/wishlistService';
+import type { UserVoucher, WishlistItem } from '@shared/types';
+import ConfirmDialog from '@shared/ui/ConfirmDialog';
 
 export default function CartPage() {
   const navigate = useNavigate();

@@ -1,0 +1,6 @@
+{
+  "typescript.tsdk": "frontend-shirtieza/node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "typescript.preferences.importModuleSpecifier": "non-relative",
+  "typescript.preferences.includePackageJsonAutoImports": "auto"
+}

@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
-import type { Collection, Product } from '../types';
-import { collectionService } from '../services/collectionService';
-import { productService } from '../services/productService';
-import ProductCard from '../components/common/ProductCard';
+import ProductCard from '@features/products/components/ProductCard';
+import { collectionService } from '@shared/api/collectionService';
+import { productService } from '@shared/api/productService';
+import type { Collection, Product } from '@shared/types';
 
 export default function CollectionPage() {
   const { slug } = useParams<{ slug: string }>();

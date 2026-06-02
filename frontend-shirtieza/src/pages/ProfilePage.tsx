@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { LogOut, User, Package, ChevronRight, AlertCircle, Check, Mail, MapPin, Phone } from 'lucide-react';
-import { useAuth } from '../providers/AuthContext';
-import { userService } from '../services/userService';
-import ConfirmDialog from '../components/ui/ConfirmDialog';
-import { useToast } from '../providers/ToastContext';
-import WilayahFields from '../components/common/WilayahFields';
-import type { Order } from '../types';
+import { useAuth } from '@app/providers/AuthContext';
+import { useToast } from '@app/providers/ToastContext';
+import { userService } from '@shared/api/userService';
+import WilayahFields from '@shared/components/WilayahFields';
+import type { Order } from '@shared/types';
+import ConfirmDialog from '@shared/ui/ConfirmDialog';
 
 export default function ProfilePage() {
   const navigate = useNavigate();

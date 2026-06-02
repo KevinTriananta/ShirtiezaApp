@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Calendar, Edit3, Mail, MapPin, RefreshCw, Save, Search, Shield, User as UserIcon, X } from 'lucide-react';
-import { userService } from '../../services/userService';
-import { useToast } from '../../providers/ToastContext';
-import type { User } from '../../types';
+import { useToast } from '@app/providers/ToastContext';
+import { userService } from '@shared/api/userService';
+import type { User } from '@shared/types';
 
 interface AdminUser extends User {
   created_at?: string;

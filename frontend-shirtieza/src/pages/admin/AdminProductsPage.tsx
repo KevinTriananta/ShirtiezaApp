@@ -3,16 +3,16 @@ import {
   Plus, 
   Search, 
 } from 'lucide-react';
-import { productService } from '../../services/productService';
-import { categoryService } from '../../services/categoryService';
-import { collectionService } from '../../services/collectionService';
-import type { Product, Category, Collection } from '../../types';
-import ProductTable from '../../components/admin/products/ProductTable';
-import ProductModal from '../../components/admin/products/ProductModal';
-import ConfirmDialog from '../../components/ui/ConfirmDialog';
-import { useToast } from '../../providers/ToastContext';
+import { useToast } from '@app/providers/ToastContext';
+import ProductModal from '@features/admin/products/components/ProductModal';
+import ProductTable from '@features/admin/products/components/ProductTable';
+import { useProductForm } from '@features/admin/products/hooks/useProductForm';
+import { categoryService } from '@shared/api/categoryService';
+import { collectionService } from '@shared/api/collectionService';
+import { productService } from '@shared/api/productService';
+import type { Product, Category, Collection } from '@shared/types';
+import ConfirmDialog from '@shared/ui/ConfirmDialog';
 
-import { useProductForm } from '../../hooks/useProductForm';
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);

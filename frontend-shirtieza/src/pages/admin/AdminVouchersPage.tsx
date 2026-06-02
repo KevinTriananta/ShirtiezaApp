@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { CheckCircle2, Eye, Plus, RefreshCw, Trash2 } from 'lucide-react';
-import { voucherService } from '../../services/voucherService';
-import { categoryService } from '../../services/categoryService';
-import type { Category, Voucher } from '../../types';
+import { categoryService } from '@shared/api/categoryService';
+import { voucherService } from '@shared/api/voucherService';
+import type { Category, Voucher } from '@shared/types';
 
 const initialForm = {
   code: '',

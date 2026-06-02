@@ -1,0 +1,112 @@
+import { createContext, useContext, useState, useEffect } from 'react';
+import type { ReactNode } from 'react';
+import { useAuth } from '@app/providers/AuthContext';
+import { cartService } from '@shared/api/cartService';
+import type { Cart, CartItem } from '@shared/types';
+
+interface CartContextType {
+  cart: Cart | null;
+  items: CartItem[];
+  total: number;
+  addToCart: (productId: number, quantity: number, size: string, color?: string) => Promise<void>;
+  removeFromCart: (itemId: number) => Promise<void>;
+  updateCartItem: (itemId: number, quantity: number) => Promise<void>;
+  clearCart: () => Promise<void>;
+  isLoading: boolean;
+}
+
+const CartContext = createContext<CartContextType | undefined>(undefined);
+
+export function CartProvider({ children }: { children: ReactNode }) {
+  const [cart, setCart] = useState<Cart | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const { user } = useAuth();
+
+  // Load cart when user changes
+  useEffect(() => {
+    if (user?.id) {
+      loadCart();
+    } else {
+      setCart(null);
+    }
+  }, [user?.id]);
+
+  const loadCart = async () => {
+    if (!user?.id) return;
+    try {
+      setIsLoading(true);
+      const response = await cartService.getUserCart(user.id);
+      setCart(response.data);
+    } catch (error) {
+      console.error('Failed to load cart:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const addToCart = async (productId: number, quantity: number, size: string, color?: string) => {
+    if (!user?.id) return;
+    try {
+      const response = await cartService.addToCart(user.id, { product_id: productId, quantity, size, color });
+      setCart(response.data);
+      if (!response.data?.items) {
+        await loadCart();
+      }
+    } catch (error) {
+      console.error('Failed to add to cart:', error);
+      throw error;
+    }
+  };
+
+  const removeFromCart = async (itemId: number) => {
+    try {
+      const response = await cartService.removeFromCart(itemId);
+      setCart(response.data);
+    } catch (error) {
+      console.error('Failed to remove from cart:', error);
+      throw error;
+    }
+  };
+
+  const updateCartItem = async (itemId: number, quantity: number) => {
+    try {
+      const response = await cartService.updateCartItem(itemId, { quantity });
+      setCart(response.data);
+    } catch (error) {
+      console.error('Failed to update cart item:', error);
+      throw error;
+    }
+  };
+
+  const clearCart = async () => {
+    if (!user?.id) return;
+    try {
+      const response = await cartService.clearCart(user.id);
+      setCart(response.data ?? { id: 0, user_id: user.id, total: 0, items: [] });
+    } catch (error) {
+      console.error('Failed to clear cart:', error);
+      throw error;
+    }
+  };
+
+  const value: CartContextType = {
+    cart,
+    items: cart?.items ?? [],
+    total: cart?.total ?? 0,
+    addToCart,
+    removeFromCart,
+    updateCartItem,
+    clearCart,
+    isLoading,
+  };
+
+  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
+}
+
+export function useCart() {
+  const context = useContext(CartContext);
+  if (!context) {
+    throw new Error('useCart must be used within CartProvider');
+  }
+  return context;
+}

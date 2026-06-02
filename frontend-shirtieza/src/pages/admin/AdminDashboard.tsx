@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { AlertCircle, Boxes, DollarSign, Package, ShoppingBag, TicketPercent, Truck, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { orderService } from '../../services/orderService';
-import Card from '../../components/ui/Card';
-import Button from '../../components/ui/Button';
-import StatCard from '../../components/admin/StatCard';
-import type { Order } from '../../types';
+import StatCard from '@features/admin/dashboard/components/StatCard';
+import { orderService } from '@shared/api/orderService';
+import type { Order } from '@shared/types';
+import Button from '@shared/ui/Button';
+import Card from '@shared/ui/Card';
 
 interface AdminStats {
   revenue: number;

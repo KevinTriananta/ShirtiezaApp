@@ -1,11 +1,11 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { AlertCircle, CreditCard, Package, Truck } from 'lucide-react';
-import { useWilayahSelection } from '../hooks/useWilayahSelection';
-import { useAuth } from '../providers/AuthContext';
-import { useToast } from '../providers/ToastContext';
-import { orderService } from '../services/orderService';
-import ConfirmDialog from '../components/ui/ConfirmDialog';
+import { useAuth } from '@app/providers/AuthContext';
+import { useToast } from '@app/providers/ToastContext';
+import { orderService } from '@shared/api/orderService';
+import { useWilayahSelection } from '@shared/hooks/useWilayahSelection';
+import ConfirmDialog from '@shared/ui/ConfirmDialog';
 
 export default function CheckoutNowPage() {
   const location = useLocation();

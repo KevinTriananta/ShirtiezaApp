@@ -1,8 +1,8 @@
 import { Link, useParams } from 'react-router-dom';
-import ProductGallery from '../components/product/ProductGallery';
-import ProductPurchasePanel from '../components/product/ProductPurchasePanel';
-import ProductReviews from '../components/product/ProductReviews';
-import { useProductDetail } from '../hooks/useProductDetail';
+import ProductGallery from '@features/products/components/ProductGallery';
+import ProductPurchasePanel from '@features/products/components/ProductPurchasePanel';
+import ProductReviews from '@features/products/components/ProductReviews';
+import { useProductDetail } from '@features/products/hooks/useProductDetail';
 
 export default function ProductDetailPage() {
   const { slug } = useParams<{ slug: string }>();

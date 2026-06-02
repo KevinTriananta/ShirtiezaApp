@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowUpRight } from 'lucide-react';
-import type { Collection } from '../types';
-import { collectionService } from '../services/collectionService';
+import { collectionService } from '@shared/api/collectionService';
+import type { Collection } from '@shared/types';
 
 export default function CollectionsPage() {
   const [collections, setCollections] = useState<Collection[]>([]);

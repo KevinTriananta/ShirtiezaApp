@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { SlidersHorizontal, X } from 'lucide-react';
-import ProductFilters from '../components/products/ProductFilters';
-import ProductGridState from '../components/products/ProductGridState';
-import ProductPagination from '../components/products/ProductPagination';
-import { useProductListing } from '../hooks/useProductListing';
+import ProductFilters from '@features/products/components/ProductFilters';
+import ProductGridState from '@features/products/components/ProductGridState';
+import ProductPagination from '@features/products/components/ProductPagination';
+import { useProductListing } from '@features/products/hooks/useProductListing';
 
 export default function ProductsPage() {
   const [showFilters, setShowFilters] = useState(false);
