@@ -32,12 +32,13 @@
     "lightningcss-darwin-x64": "^1.32.0",
     "postcss": "^8.5.12",
     "tailwindcss": "^4.2.4",
-    "typescript": "~6.0.2",
+    "typescript": "^5.9.3",
     "typescript-eslint": "^8.58.2",
     "vite": "^8.0.10"
   },
   "optionalDependencies": {
     "@rolldown/binding-darwin-x64": "^1.0.2",
-    "@tailwindcss/oxide-darwin-x64": "^4.2.4"
+    "@tailwindcss/oxide-darwin-x64": "^4.2.4",
+    "lightningcss-darwin-x64": "^1.32.0"
   }
 }

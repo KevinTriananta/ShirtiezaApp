@@ -2,9 +2,12 @@ package config
 
 import (
 	"backend-shirtieza/models"
+	"errors"
 	"log"
+	"os"
 
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
 func SeedDatabase() {
@@ -81,28 +84,59 @@ func SeedDatabase() {
 	}
 	seedCollectionCategories()
 	cleanupLegacyProductSeedData()
-	// Seed Admin User
-	adminEmail := "admin@shirtieza.com"
+	seedAdminUser()
+	log.Println("✅ Database seeding completed successfully")
+}
+
+func seedAdminUser() {
+	adminEmail := getenvDefault("ADMIN_EMAIL", "admin@shirtieza.com")
+	adminName := getenvDefault("ADMIN_NAME", "Shirtieza Admin")
+	adminPassword := os.Getenv("ADMIN_PASSWORD")
+	if adminPassword == "" {
+		if os.Getenv("SERVER_ENV") == "production" {
+			log.Println("Admin seed skipped: set ADMIN_PASSWORD to create or update the admin user")
+			return
+		}
+		adminPassword = "admin123"
+	}
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(adminPassword), bcrypt.DefaultCost)
+	if err != nil {
+		log.Printf("Error hashing admin password: %v", err)
+		return
+	}
+
 	var admin models.User
-	adminPassword, _ := bcrypt.GenerateFromPassword([]byte("admin123"), bcrypt.DefaultCost)
-	if err := DB.Where("email = ?", adminEmail).First(&admin).Error; err != nil {
+	err = DB.Where("email = ?", adminEmail).First(&admin).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
 		adminUser := models.User{
-			Name:     "Shirtieza Admin",
+			Name:     adminName,
 			Email:    adminEmail,
-			Password: string(adminPassword),
+			Password: string(hashedPassword),
 			Role:     "admin",
 		}
 		if err := DB.Create(&adminUser).Error; err == nil {
-			log.Println("👤 Admin user created (admin@shirtieza.com / admin123)")
+			log.Printf("👤 Admin user created (%s)", adminEmail)
 		}
+		return
+	}
+	if err != nil {
+		log.Printf("Error checking admin user: %v", err)
+		return
 	} else {
 		DB.Model(&admin).Updates(map[string]interface{}{
-			"name":     "Shirtieza Admin",
-			"password": string(adminPassword),
+			"name":     adminName,
+			"password": string(hashedPassword),
 			"role":     "admin",
 		})
 	}
-	log.Println("✅ Database seeding completed successfully")
+}
+
+func getenvDefault(key string, fallback string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return fallback
 }
 
 func cleanupLegacyProductSeedData() {

@@ -221,7 +221,7 @@ go mod tidy
 1. Setup authentication dengan JWT
 2. Implement file upload untuk product images
 3. Add email notifications
-4. Integrate payment gateway (Stripe, Midtrans, etc.)
+4. Improve manual payment confirmation flow
 5. Setup admin dashboard
 6. Add product recommendations
 7. Implement wishlist

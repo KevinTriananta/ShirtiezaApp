@@ -30,18 +30,33 @@ func MigrateAndSeedWilayah() {
 }
 
 func migrateWilayah(db *sql.DB) error {
-	queries := []string{
-		`CREATE TABLE IF NOT EXISTS provinces (id INT PRIMARY KEY, name VARCHAR(100) NOT NULL, code VARCHAR(10) NOT NULL)`,
-		`CREATE TABLE IF NOT EXISTS cities (id INT PRIMARY KEY, type VARCHAR(50) NOT NULL, name VARCHAR(100) NOT NULL, code VARCHAR(10) NOT NULL, full_code VARCHAR(10) NOT NULL, province_id INT NOT NULL, INDEX idx_cities_province_id (province_id))`,
-		`CREATE TABLE IF NOT EXISTS districts (id INT PRIMARY KEY, name VARCHAR(100) NOT NULL, code VARCHAR(10) NOT NULL, full_code VARCHAR(10) NOT NULL, city_id INT NOT NULL, INDEX idx_districts_city_id (city_id))`,
-		`CREATE TABLE IF NOT EXISTS villages (id INT PRIMARY KEY, name VARCHAR(100) NOT NULL, code VARCHAR(10) NOT NULL, full_code VARCHAR(10) NOT NULL, pos_code VARCHAR(10) NOT NULL, district_id INT NOT NULL, INDEX idx_villages_district_id (district_id))`,
-	}
+	queries := wilayahMigrationQueries()
 	for _, query := range queries {
 		if _, err := db.Exec(query); err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+func wilayahMigrationQueries() []string {
+	if DB != nil && DB.Dialector.Name() == "postgres" {
+		return []string{
+			`CREATE TABLE IF NOT EXISTS provinces (id INTEGER PRIMARY KEY, name VARCHAR(100) NOT NULL, code VARCHAR(10) NOT NULL)`,
+			`CREATE TABLE IF NOT EXISTS cities (id INTEGER PRIMARY KEY, type VARCHAR(50) NOT NULL, name VARCHAR(100) NOT NULL, code VARCHAR(10) NOT NULL, full_code VARCHAR(10) NOT NULL, province_id INTEGER NOT NULL)`,
+			`CREATE INDEX IF NOT EXISTS idx_cities_province_id ON cities (province_id)`,
+			`CREATE TABLE IF NOT EXISTS districts (id INTEGER PRIMARY KEY, name VARCHAR(100) NOT NULL, code VARCHAR(10) NOT NULL, full_code VARCHAR(10) NOT NULL, city_id INTEGER NOT NULL)`,
+			`CREATE INDEX IF NOT EXISTS idx_districts_city_id ON districts (city_id)`,
+			`CREATE TABLE IF NOT EXISTS villages (id INTEGER PRIMARY KEY, name VARCHAR(100) NOT NULL, code VARCHAR(10) NOT NULL, full_code VARCHAR(10) NOT NULL, pos_code VARCHAR(10) NOT NULL, district_id INTEGER NOT NULL)`,
+			`CREATE INDEX IF NOT EXISTS idx_villages_district_id ON villages (district_id)`,
+		}
+	}
+	return []string{
+		`CREATE TABLE IF NOT EXISTS provinces (id INT PRIMARY KEY, name VARCHAR(100) NOT NULL, code VARCHAR(10) NOT NULL)`,
+		`CREATE TABLE IF NOT EXISTS cities (id INT PRIMARY KEY, type VARCHAR(50) NOT NULL, name VARCHAR(100) NOT NULL, code VARCHAR(10) NOT NULL, full_code VARCHAR(10) NOT NULL, province_id INT NOT NULL, INDEX idx_cities_province_id (province_id))`,
+		`CREATE TABLE IF NOT EXISTS districts (id INT PRIMARY KEY, name VARCHAR(100) NOT NULL, code VARCHAR(10) NOT NULL, full_code VARCHAR(10) NOT NULL, city_id INT NOT NULL, INDEX idx_districts_city_id (city_id))`,
+		`CREATE TABLE IF NOT EXISTS villages (id INT PRIMARY KEY, name VARCHAR(100) NOT NULL, code VARCHAR(10) NOT NULL, full_code VARCHAR(10) NOT NULL, pos_code VARCHAR(10) NOT NULL, district_id INT NOT NULL, INDEX idx_villages_district_id (district_id))`,
+	}
 }
 
 func seedWilayah(db *sql.DB, dataPath string) error {
@@ -74,6 +89,10 @@ func seedWilayahTable[T any](table string, path string, insert func([]T) error) 
 
 	items, err := readSeedJSON[T](path)
 	if err != nil {
+		if os.IsNotExist(err) {
+			log.Printf("%s seed skipped: %s not found", table, path)
+			return nil
+		}
 		return err
 	}
 	if count >= int64(len(items)) {
@@ -88,7 +107,7 @@ func insertWilayahBatch[T any](table string, items []T) error {
 	if len(items) == 0 {
 		return nil
 	}
-	if err := DB.Table(table).Clauses(clause.Insert{Modifier: "IGNORE"}).CreateInBatches(items, 1000).Error; err != nil {
+	if err := DB.Table(table).Clauses(clause.OnConflict{DoNothing: true}).CreateInBatches(items, 1000).Error; err != nil {
 		log.Printf("%s seed batch error: %v", table, err)
 		return err
 	}
@@ -99,7 +118,7 @@ func insertWilayahBatch[T any](table string, items []T) error {
 func readSeedJSON[T any](path string) ([]T, error) {
 	file, err := os.Open(path)
 	if err != nil {
-		return nil, fmt.Errorf("open %s: %w", path, err)
+		return nil, err
 	}
 	defer file.Close()
 	var items []T

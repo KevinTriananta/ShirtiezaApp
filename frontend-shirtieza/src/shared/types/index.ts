@@ -134,6 +134,7 @@ export interface Order {
   payment_status: string;
   payment_method: string;
   payment_proof?: string;
+  paid_at?: string | null;
   notes?: string;
   items: OrderItem[];
   created_at: string;

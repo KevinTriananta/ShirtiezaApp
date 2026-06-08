@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: shirtieza-backend
+    runtime: go
+    rootDir: backend-shirtieza
+    buildCommand: go build -o main ./cmd
+    startCommand: ./main
+    envVars:
+      - key: SERVER_ENV
+        value: production
+      - key: DB_DRIVER
+        value: postgres
+      - key: DATABASE_DSN
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_NAME
+        value: Shirtieza Admin
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+      - key: FRONTEND_URL
+        sync: false

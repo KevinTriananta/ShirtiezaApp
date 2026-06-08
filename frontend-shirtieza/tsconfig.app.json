@@ -5,13 +5,18 @@
     "lib": ["ES2023", "DOM"],
     "module": "esnext",
     "types": ["vite/client"],
-    "ignoreDeprecations": "6.0",
     "skipLibCheck": true,
 
     /* Bundler mode */
     "moduleResolution": "bundler",
     "baseUrl": ".",
     "paths": {
+      "@/components/cart/*": ["src/features/cart/components/*"],
+      "@/components/ui/*": ["src/shared/ui/*"],
+      "@/providers/*": ["src/app/providers/*"],
+      "@/services/*": ["src/shared/api/*"],
+      "@/types": ["src/shared/types/index.ts"],
+      "@/*": ["src/*"],
       "@app/*": ["src/app/*"],
       "@assets/*": ["src/assets/*"],
       "@features/*": ["src/features/*"],

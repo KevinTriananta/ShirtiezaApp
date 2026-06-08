@@ -97,6 +97,7 @@ export default function CheckoutNowPage() {
         }],
       };
       const response = await orderService.createOrder(orderData);
+
       notify('Order created successfully.', 'success');
       navigate(`/orders/${response.data.id}`);
     } catch (err: any) {

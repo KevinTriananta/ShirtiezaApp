@@ -20,7 +20,8 @@ export default function CollectionPage() {
       const colRes = await collectionService.getCollectionBySlug(slug!);
       setCollection(colRes.data);
       const prodRes = await productService.getProductsByCollection(colRes.data.id);
-      setProducts(prodRes.data.data || prodRes.data || []);
+      const productData = prodRes.data;
+      setProducts(Array.isArray(productData) ? productData : productData.data || []);
     } catch (error) {
       console.error('Failed to load collection:', error);
     } finally {

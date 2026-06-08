@@ -20,7 +20,8 @@ export default function CategoryPage() {
       const catRes = await categoryService.getCategoryBySlug(slug!);
       setCategory(catRes.data);
       const prodRes = await productService.getProductsByCategory(catRes.data.id);
-      setProducts(prodRes.data.data || prodRes.data || []);
+      const productData = prodRes.data;
+      setProducts(Array.isArray(productData) ? productData : productData.data || []);
     } catch (error) {
       console.error('Failed to load category:', error);
     } finally {

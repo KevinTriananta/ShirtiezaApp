@@ -4,9 +4,11 @@ import (
 	"backend-shirtieza/models"
 	"fmt"
 	"gorm.io/driver/mysql"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"log"
 	"os"
+	"strings"
 )
 
 var DB *gorm.DB
@@ -17,7 +19,7 @@ func InitDB() {
 	if dsn == "" {
 		dsn = "root:@tcp(127.0.0.1:3306)/shirtieza_db?charset=utf8mb4&parseTime=True&loc=Local"
 	}
-	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	DB, err = gorm.Open(databaseDialector(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
@@ -47,6 +49,18 @@ func InitDB() {
 	}
 	fmt.Println("✅ Database migration completed")
 }
+
+func databaseDialector(dsn string) gorm.Dialector {
+	driver := strings.ToLower(strings.TrimSpace(os.Getenv("DB_DRIVER")))
+	if driver == "" && strings.HasPrefix(strings.ToLower(dsn), "postgres") {
+		driver = "postgres"
+	}
+	if driver == "postgres" || driver == "postgresql" {
+		return postgres.Open(dsn)
+	}
+	return mysql.Open(dsn)
+}
+
 func CloseDB() {
 	sqlDB, err := DB.DB()
 	if err != nil {

@@ -98,8 +98,11 @@ export default function OrderDetailPage() {
 
   const paymentStyles: Record<string, string> = {
     unpaid: 'bg-amber-50 text-amber-700 border-amber-100',
+    waiting_payment: 'bg-amber-50 text-amber-700 border-amber-100',
     waiting_confirmation: 'bg-blue-50 text-blue-700 border-blue-100',
     paid: 'bg-emerald-50 text-emerald-700 border-emerald-100',
+    failed: 'bg-red-50 text-red-700 border-red-100',
+    expired: 'bg-neutral-100 text-neutral-500 border-neutral-200',
     rejected: 'bg-red-50 text-red-700 border-red-100',
   };
 

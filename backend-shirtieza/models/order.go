@@ -25,9 +25,10 @@ type Order struct {
 	Total        float64  `json:"total" gorm:"not null"`
 	// Status: pending, processing, shipped, delivered, cancelled
 	Status        string         `json:"status" gorm:"default:'pending'"`
-	PaymentStatus string         `json:"payment_status" gorm:"default:'unpaid'"` // unpaid, waiting_confirmation, paid, rejected, refunded
+	PaymentStatus string         `json:"payment_status" gorm:"default:'unpaid'"` // unpaid, waiting_payment, waiting_confirmation, paid, failed, expired, rejected, refunded
 	PaymentMethod string         `json:"payment_method"`
 	PaymentProof  string         `json:"payment_proof"`
+	PaidAt        *time.Time     `json:"paid_at"`
 	Notes         string         `json:"notes" gorm:"type:text"`
 	CreatedAt     time.Time      `json:"created_at"`
 	UpdatedAt     time.Time      `json:"updated_at"`
