@@ -1,3 +1,6 @@
 .DS_Store
 *.icloud
 *.nosync/
+
+# Build outputs
+backend-shirtieza/main
